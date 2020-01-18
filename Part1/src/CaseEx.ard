@@ -1,0 +1,62 @@
+\import Case
+
+-- 1. Implement any sorting algorithm using \case for pattern matching on the result of comparison of elements
+-- of a list.
+
+-- 2. Define 'filter' via 'if' not using \case.
+--    Prove the lemma 'filter-lem' for this version of 'filter'.
+
+\func filter' {A : \Type} (p : A -> Bool) (xs : List A) : List A => {?}
+
+\func filter-lem {A : \Type} (p : A -> Bool) (xs : List A) : length (filter' p xs) <= length xs => {?}
+
+-- 3. Prove that, for every function f : Bool -> Bool and every x : Bool, it is true that f (f (f x)) = f x.
+
+\func Bool-lem (f : Bool -> Bool) (x : Bool) : f (f (f x)) = f x => {?}
+
+-- 4. Define the view, which represents a natural number as a pair of the quotient and the remainder of
+-- division by a positive 'm'. Implement the division function.
+
+\data ModView (m n : Nat)
+  | quot-rem (q r : Nat) (t : T (r < m)) (p : n = q * m + r)
+
+\func mod-view (m n : Nat) (t : T (0 < m)) : ModView m n => {?}
+
+\func div (n m : Nat) (t : T (0 < m)) : Nat => {?}
+
+-- 5. Prove that the predicate 'isEven' is decidable.
+
+\func isEven (n : Nat) => \Sigma (k : Nat) (n = 2 * k)
+
+\func isEven-dec : DecPred isEven => {?}
+
+-- 6. Prove that if equality of elements of a type 'A' is decidable, then eqiality of elements if 'List A' is also decidable.
+
+\instance ListEq {A : \Type} (dec : Eq A) : Eq (List A)
+  | decideEq => {?}
+
+-- 7. Prove that if equality of elements of a type 'A' is decidable, then every list of elements of 'A' is either empty,
+-- consists of repetitions of one element or there exist two different elements in 'A'.
+
+\func repeat {A : \Type} (n : Nat) (a : A) : List A \elim n
+  | 0 => nil
+  | suc n => cons a (repeat n a)
+
+\data Result (A : \Type) (xs : List A)
+  | empty (xs = nil)
+  | repeated (n : Nat) (a : A) (p : xs = repeat n a)
+  | A-is-not-trivial (a a' : A) (p : a = a' -> Empty)
+
+\func lemma {A : \Type} (xs : List A) {dec : DecEq A} : Result A xs => {?}
+
+-- 8. Prove that the functions 'FromBoolToDec' and 'FromDecToBool' are inverse to each other.
+
+\func bdb {A : \Type} (p : A -> Bool) : FromDecToBool (FromBoolToDec p) = p => {?}
+
+-- We cannot prove that 'FromBoolToDec (FromDecToBool P) = P', but we can prove a weaker statement:
+-- these predicates are logically equivalent.
+
+-- Equivalence of predicates
+\func \infix 4 <-> {A : \Type} (P Q : A -> \Type) => \Pi (x : A) -> \Sigma (P x -> Q x) (Q x -> P x)
+
+\func dbd {A : \Type} (P : \Sigma (P : A -> \Type) (DecPred P)) : (FromBoolToDec (FromDecToBool P)).1 <-> P.1 => {?}

@@ -1,0 +1,332 @@
+-------------------------------------------------
+-- Records: \new, \cowith, projections, pattern matching
+-------------------------------------------------
+
+\data NatPair | natPair Nat Nat
+
+\func natFst (p : NatPair) : Nat
+  | natPair x _ => x
+
+\func natSnd (p : NatPair) : Nat
+  | natPair _ y => y
+
+\record NatPair'
+  | fst : Nat
+  | snd : Nat
+
+-- fst : \Pi {x : NatPair'} -> Nat
+\func foo (p : NatPair') => fst {p}
+
+\func foo' (p : NatPair') => NatPair'.fst {p}
+
+\func bar (p : NatPair') => p.snd
+
+-- (f x).snd -- This is not allowed. It can be replaced with one of the following variants:
+-- \let e : NatPair' => f x \in e.snd
+-- snd {f x}
+
+-- This code will not typecheck since the type of p is not specified explicitly
+-- \func baz {p p' : NatPair'} (q : p = p') => pmap (\lam p => p.fst) q
+
+\func zeroPair => \new NatPair' {
+  | fst => 0
+  | snd => 0
+}
+
+\func etaNatPair' (p : NatPair') : p = \new NatPair' { | fst => p.fst | snd => p.snd }
+  => idp
+
+\func \infixl 6 + (x y : Nat) : Nat \elim y
+  | 0 => x
+  | suc y => suc (x + y)
+
+\func sum (p : NatPair') => fst {p} + p.snd
+
+\func sum' (p : NatPair') : Nat
+  | (a, b) => a + b
+
+-- This function is equivalent to zeroPair defined above.
+-- \cowith is followed with a set of clauses, each starting
+-- with | and specifying a field and its value
+\func zeroPair' : NatPair' \cowith
+  | fst => 0
+  | snd => 0
+
+-------------------------------------------------
+-- Partial implementation
+-------------------------------------------------
+
+\func PartialEx : \Type => NatPair' { | fst => 0 }
+
+\func ppp : NatPair' { | fst => 0 } => \new NatPair' { | snd => 1 }
+
+
+\func partial (p : NatPair' { | fst => 0 | snd => 1 }) : PartialEx => p
+
+\func PartialEx' => NatPair' { | fst => 3 | snd => 7 }
+
+\func new => \new PartialEx'
+
+-------------------------------------------------
+-- Parameters visibility of fields
+-------------------------------------------------
+
+\record Pair (A B : \Type)
+  | fst' : A
+  | snd' : B
+
+\func pairExample : Pair Nat (Nat -> Nat)
+  => \new Pair { | fst' => 1 | snd' (x : Nat) => x }
+
+\func pairExample'
+  => \new Pair { | A => Nat | B => Nat -> Nat | fst' => 1 | snd' (x : Nat) => x }
+
+\func pairExample''
+  => \new Pair Nat (Nat -> Nat) 1 (\lam (x : Nat) => x)
+
+\record NatPair'' (fst'' snd'' : Nat)
+
+\func natPair''ex => \new NatPair'' {
+  | fst'' => 0
+  | snd'' => 0
+}
+
+\record Pair''
+  | A : \Type
+  | B : \Type
+  | fst'' : A
+  | snd'' : B
+
+-------------------------------------------------
+-- Dependent records, a type of positive natural numbers
+-------------------------------------------------
+
+\data Bool | true | false
+
+-- compare this definition of T with the one in module Basics
+\data T (b : Bool) \with
+  | true => tt
+
+\func isPos (n : Nat) : Bool
+  | 0 => false
+  | suc _ => true
+
+\record PosNat (n : Nat) (p : T (isPos n))
+
+-------------------------------------------------
+-- Monoid
+-------------------------------------------------
+
+\class Monoid (A : \Type)
+  | ide : A
+  | \infixl 7 * : A -> A -> A
+  | *-assoc (x y z : A) : (x * y) * z = x * (y * z)
+  -- | *-assoc : \Pi (x y z : A) -> (x * y) * z = x * (y * z)
+  | ide-left (x : A) : ide * x = x
+  | ide-right (x : A) : x * ide = x
+
+\func baz (m : Monoid Nat 0 (Nat.+)) => m.*-assoc
+
+\func transport {A : \Type} (B : A -> \Type) {a a' : A} (p : a = a') (b : B a)
+  => coe (\lam i => B (p @ i)) b right
+
+\func \infixr 5 *> {A : \Type} {a a' a'' : A} (p : a = a') (q : a' = a'') : a = a''
+  => transport (\lam x => a = x) q p
+
+\class CommMonoid \extends Monoid
+  | *-comm (x y : A) : x * y = y * x
+  | ide-right x => *-comm x ide *> ide-left x
+-- ide-right follows from id-left for commutative monoids
+
+-------------------------------------------------
+-- Classes, instances
+-------------------------------------------------
+
+\instance +-NatMonoid : Monoid Nat
+  | ide => 0
+  | * => Nat.+
+  | *-assoc => {?}
+  | ide-left => {?}
+  | ide-right => {?}
+
+\instance *-NatMonoid : Monoid Nat
+  | ide => 1
+  | * => Nat.*
+  | *-assoc => {?}
+  | ide-left => {?}
+  | ide-right => {?}
+
+-- alternative definition of the latter:
+\instance *-NatMonoid' : Monoid Nat 1 (Nat.*) {?} {?} {?}
+
+-- ok, +-NatMonoid is inferred since it was declared the first
+-- id-left x here is equivalent to id-left {+-NatMonoid} x
+\func +-test (x : Nat) : 0 Nat.+ x = x => ide-left x
+-- error, because +-NatMonoid is inferred, not *-NatMoniod
+-- \func *-test (x : Nat) : 1 Nat.* x = x => id-left x
+
+\func instEx => +-NatMonoid.ide-left
+
+\func instExF (M : Monoid) => M.ide
+
+\func instEx' => instExF +-NatMonoid
+
+\class Eq (A : \Type)
+  | \infix 3 == (x y : A) : Bool
+
+-- function refl from Haskell can be defined in two ways
+-- refl :: Eq a => a -> Bool
+-- refl x = x == x
+\func refl {A : \Type} {e : Eq A} (a : A) => a == a
+
+\func refl' {E : Eq} (a : E) => a == a
+
+-- \func xxxx => refl 1
+
+-------------------------------------------------
+-- Coercions
+-------------------------------------------------
+
+\func CF-coerce (M : Monoid) (x : M) => x
+
+\data XXX | con
+
+\data YYY | con' XXX Nat | con''
+  \where {
+    -- We can define coercions TO this type.
+    -- The return type of the function must be YYY.
+    \use \coerce fromXXX (x : XXX) => con' x 0
+
+    -- We can also define coercions FROM this type.
+    -- The type of the last parameter of the function must
+    -- be YYY.
+    \use \coerce toXXX (y : YYY) => con
+  }
+
+\func fff (y : YYY) => y
+
+-- Elements of type XXX are implicitly converted to type YYY by function fromXXX.
+\func ggg => fff con
+
+-- Implicit convertion from Nat to Int is done in this way:
+\func hhh : Int => 0
+
+-------------------------------------------------
+-- Extensions, diamond problem
+-------------------------------------------------
+
+\record Base (A : \Type)
+
+\record Base' (A : \Type)
+
+\record X \extends Base
+  | a : A
+
+\record Y \extends Base'
+  | b : A
+
+\record Z \extends X, Y
+
+\func zzz => \new Z {
+  | A => {?}
+  | a => {?}
+  | Base'.A => {?}
+  | b => {?}
+}
+
+\func zzzz (z : Z) => Base'.A {z}
+
+\record X' \extends Base
+  | aa : A
+
+\record Y' \extends Base
+  | bb : A
+
+-- Z' has three fields: aa, bb, A
+\record Z' \extends X', Y'
+
+\class CommMonoid' \extends Monoid {
+  | comm (x y : A) : x * y = y * x
+  | ide-right x => comm x ide *> ide-left x
+}
+
+\class AbGroup \extends CommMonoid' {
+  | inverse : A -> A
+  | inv-left (x : A) : inverse x * x = ide
+  | inv-right (x : A) : x * inverse x = ide
+}
+
+-- We omit distributivity
+\class Ring \extends AbGroup
+  | mulMonoid : Monoid A
+
+-- This is not a correct way to define the class Ring:
+-- the structures of addition and multiplication coincide.
+-- \class Ring \extends AbGroup, Monoid'
+
+-- This class does not extend Monoid
+\class AbGroup' (A : \Type) {
+  -- Here all the fields of Monoid, CommMonoid and AbGroup
+  -- should be repeated
+}
+
+\class Ring' \extends AbGroup', Monoid
+  | Monoid.A => AbGroup'.A -- make sure that classifying fields coincide
+
+-------------------------------------------------
+-- Classes without classifying fields
+-------------------------------------------------
+
+-- Implementations are omitted
+
+\func isInj {A B : \Type} (f : A -> B) : \Type => {?}
+
+\func isSur {A B : \Type} (f : A -> B) : \Type => {?}
+
+\func isBij {A B : \Type} (f : A -> B) : \Type => {?}
+
+\func IsInj+isSur=>isBij {A B : \Type} (f : A -> B) (p : isInj f) (q : isInj f) : isBij f => {?}
+
+\func IsBij=>isInj {A B : \Type} (f : A -> B) (p : isBij f) : isInj f => {?}
+
+\func IsBij=>isSur {A B : \Type} (f : A -> B) (p : isBij f) : isSur f => {?}
+
+\class Map \noclassifying {A B : \Type} (f : A -> B) {
+  \func isInj : \Type => {?}
+
+  \func isSur : \Type => {?}
+
+  \func isBij : \Type => {?}
+
+  \func isInj+isSur=>isBij (p : isInj) (q : isInj) : isBij => {?}
+
+  \func isBij=>isInj (p : isBij) : isInj => {?}
+
+  \func isBij=>isSur (p : isBij) : isSur => {?}
+}
+
+\func isInj+isSur<=>isBij (m : Map) : \Sigma (isBij -> \Sigma isInj isSur) (\Sigma isInj isSur -> isBij)
+  => ((\lam p => (isBij=>isInj p, isBij=>isInj p)), (\lam p => isInj+isSur=>isBij p.1 p.2))
+  \where \open Map
+
+\func id-isInj {A : \Type} : Map.isInj {\new Map (\lam (a : A) => a)} => {?}
+
+\class Endo \extends Map {
+  | B => A
+
+  \func isIdem => \Pi (x : A) -> f (f x) = f x
+
+  \func isInv => \Pi (x : A) -> f (f x) = x
+
+  \func isIdem+isInv=>id (p : isIdem) (q : isInv) : f = (\lam x => x) => {?}
+}
+
+-------------------------------------------------
+-- Functor
+-------------------------------------------------
+
+\class Functor (F : \Type -> \Type)
+  | fmap {A B : \Type} (f : A -> B) : F A -> F B
+  | fmap-id {A : \Type} (y : F A) : fmap (\lam (x : A) => x) y = y
+  | fmap-comp {A B C : \Type} (f : A -> B) (g : B -> C) (y : F A)
+  : fmap (\lam x => g (f x)) y = fmap g (fmap f y)

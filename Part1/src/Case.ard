@@ -1,0 +1,266 @@
+
+-------------------------------------------------
+-- Filter via \case and via helper
+-------------------------------------------------
+
+\data Bool | false | true
+
+\data List (A : \Type) | nil | cons A (List A)
+
+\func filter {A : \Type} (p : A -> Bool) (xs : List A) : List A \elim xs
+  | nil => nil
+  | cons x xs => \case p x \with {
+    | true => cons x (filter p xs)
+    | false => filter p xs
+  }
+
+\func filter' {A : \Type} (p : A -> Bool) (xs : List A) : List A \elim xs
+  | nil => nil
+  | cons x xs => helper (p x) x (filter p xs)
+  \where
+    \func helper {A : \Type} (b : Bool) (x : A) (r : List A) : List A \elim b
+      | true => cons x r
+      | false => r
+
+-------------------------------------------------
+-- Remark in \elim vs \case
+-------------------------------------------------
+
+\func f (x : Nat) : Nat => \case x \with { zero => 0 | suc n => n }
+\func f' (x : Nat) : Nat | zero => 0 | suc n => n
+
+-------------------------------------------------
+-- \case in dependently typed languages
+-------------------------------------------------
+
+\func not (b : Bool) : Bool
+  | true => false
+  | false => true
+
+\func foo {A : \Type} (p : A -> Bool) (a : A) : p a = not (not (p a)) =>
+  \case p a \as b \return b = not (not b) \with {
+    | true => idp
+    | false => idp
+  }
+
+\func foo' {A : \Type} (p : A -> Bool) (a : A) : p a = not (not (p a)) =>
+  helper (p a)
+  \where
+    \func helper (b : Bool) : b = not (not b) \elim b
+      | true => idp
+      | false => idp
+
+-------------------------------------------------
+-- \case with several arguments
+-------------------------------------------------
+
+\data Ordering | LT | EQ | GT
+
+\func \infix 4 < (x y : Nat) : Bool
+  | 0, 0 => false
+  | 0, suc y => true
+  | suc x, 0 => false
+  | suc x, suc y => x < y
+
+\func compare (x y : Nat) : Ordering =>
+  \case x < y, y < x \with {
+    | true, true => EQ -- this will never be matched
+    | true, false => LT
+    | false, true => GT
+    | false, false => EQ }
+
+-------------------------------------------------
+-- Proof of a fact about filter via \case
+-------------------------------------------------
+
+\data Empty
+
+\func absurd {A : \Type} (e : Empty) : A
+
+\data Unit | unit
+
+\func \infix 4 <= (x y : Nat) : \Type
+  | 0, _ => Unit
+  | suc _, 0 => Empty
+  | suc x, suc y => x <= y
+
+\func length {A : \Type} (xs : List A) : Nat
+  | nil => 0
+  | cons _ xs => suc (length xs)
+
+-- auxiliary helper lemma
+\func <=-helper {x y : Nat} (p : x <= y) : x <= suc y \elim x, y
+  | 0, _ => unit
+  | suc x, 0 => absurd p
+  | suc x, suc y => <=-helper p
+
+\func filter-lem {A : \Type} (p : A -> Bool) (xs : List A) : length (filter p xs) <= length xs \elim xs
+  | nil => unit
+  | cons x xs => \case p x \as b \return length (\case b \with { | true => cons x (filter p xs) | false => filter p xs }) <= suc (length xs) \with {
+    | true => filter-lem p xs
+    | false => <=-helper (filter-lem p xs)
+  }
+
+-------------------------------------------------
+-- Matching on idp in \case
+-------------------------------------------------
+
+\func transport {A : \Type} (B : A -> \Type) {a a' : A} (p : a = a') (b : B a) : B a'
+  => coe (\lam i => B (p @ i)) b right
+
+\func baz {A : \Type} (B : Bool -> \Type) (p : A -> Bool) (a : A) (pt : B true) (pf : B false) : B (p a) =>
+  -- Not only the return type can be specified explicitly, but also
+  -- the type of expressions we do matching on.
+  -- And we can use variables bounded in \as.
+  \case p a \as b, idp : b = p a \with {
+    | true, q => transport B q pt -- here q : true = p a
+    | false, q => transport B q pf -- here q : false = p a
+  }
+
+\func baz' {A : \Type} (B : Bool -> \Type) (p : A -> Bool) (a : A) (pt : B true) (pf : B false) : B (p a) =>
+  helper B p a pt pf
+         (p a) idp
+  \where
+    \func helper {A : \Type} (B : Bool -> \Type) (p : A -> Bool) (a : A) (pt : B true) (pf : B false)
+                 (b : Bool) (q : b = p a) : B (p a) \elim b
+      | true => transport B q pt -- here q : true = p a
+      | false => transport B q pf -- here q : false = p a
+
+-------------------------------------------------
+-- One more example of \case
+-------------------------------------------------
+
+-- symmetry
+\func inv {A : \Type} {a a' : A} (p : a = a') : a' = a
+  => transport (\lam x => x = a) p idp
+
+\func bar {A : \Type} (p q : A -> Bool) (a : A) (s : q a = not (p a))
+  : not (q a) = p a =>
+  \case p a \as x, q a \as y, s : y = not x \return not y = x \with {
+    | true, true, s' => inv s'
+    | true, false, _ => idp
+    | false, true, _ => idp
+    | false, false, s' => inv s'
+  }
+
+-- helper version
+\func bar' {A : \Type} (p q : A -> Bool) (a : A) (s : q a = not (p a))
+  : not (q a) = p a => helper (p a) (q a) s
+  \where
+    \func helper (x y : Bool) (s : y = not x) : not y = x \elim x, y
+      | true, true => inv s
+      | true, false => idp
+      | false, true => idp
+      | false, false => inv s
+
+-------------------------------------------------
+-- Views
+-------------------------------------------------
+
+\func \infixl 6 + (x y : Nat) : Nat \elim y
+  | 0 => x
+  | suc y => suc (x + y)
+
+\func \infixl 7 * (x y : Nat) : Nat \elim y
+  | 0 => 0
+  | suc y => x * y + x
+
+\data Parity (n : Nat)
+  | even (k : Nat) (p : n = 2 * k)
+  | odd (k : Nat) (p : n = 2 * k + 1)
+
+-- congruence
+\func pmap {A B : \Type} (f : A -> B) {a a' : A} (p : a = a') : f a = f a'
+  => transport (\lam x => f a = f x) p idp
+
+\func parity (n : Nat) : Parity n
+  | 0 => even 0 idp
+  | suc n => \case parity n \with {
+    | even k p => odd k (pmap suc p)
+    | odd k p => even (suc k) (pmap suc p) }
+
+\func div2 (n : Nat) : Nat => \case parity n \with {
+  | even k _ => k
+  | odd k _ => k
+}
+
+-------------------------------------------------
+-- Decidable predicates
+-------------------------------------------------
+
+\data Decide (A : \Type)
+  | yes A
+  | no (A -> Empty)
+
+\func DecPred {A : \Type} (P : A -> \Type) => \Pi (a : A) -> Decide (P a)
+
+\func suc/=0 {n : Nat} (p : suc n = 0) : Empty => transport (\lam n => \case n \with { | 0 => Empty | suc _ => Unit }) p unit
+
+-- the predicate \lam n => n = 0 is decidable
+\func decide0 : DecPred (\lam (n : Nat) => n = 0) => \lam n =>
+    \case n \as x \return Decide (x = 0) \with {
+      | 0 => yes idp
+      | suc _ => no suc/=0
+    }
+
+-------------------------------------------------
+-- Decidable equality
+-------------------------------------------------
+
+\func DecEq (A : \Type) => \Pi (a a' : A) -> Decide (a = a')
+
+\class Eq (A : \Type) {
+  | decideEq : DecEq A
+  -- Functions declared inside a class have instance of
+  -- the class as their first implicit parameter.
+  \func \infix 4 == (a a' : A) : Bool => \case decideEq a a' \with {
+    | yes _ => true
+    | no _ => false
+  }
+} \where {
+  -- Function == is equivalent to =='.
+  \func \infix 4 ==' {e : Eq} (a a' : e.A) : Bool => \case e.decideEq a a' \with {
+    | yes _ => true
+    | no _ => false
+  }
+}
+
+\func pred (n : Nat) : Nat
+  | 0 => 0
+  | suc n => n
+
+\instance NatEq : Eq Nat
+  | decideEq => decideEq
+  \where
+    \func decideEq (x y : Nat) : Decide (x = y)
+      | 0, 0 => yes idp
+      | 0, suc y => no (\lam p => suc/=0 (inv p))
+      | suc x, 0 => no suc/=0
+      | suc x, suc y => \case decideEq x y \with {
+        | yes p => yes (pmap suc p)
+        | no c => no (\lam p => c (pmap pred p))
+      }
+
+\func test1 : (0 Eq.== 0) = true => idp
+\func test2 : (0 Eq.== 1) = false => idp
+
+-------------------------------------------------
+-- Decidable predicates and functions
+-------------------------------------------------
+
+\func T (b : Bool) : \Type
+  | true => Unit
+  | false => Empty
+
+\func FromBoolToDec {A : \Type} (p : A -> Bool) : \Sigma (P : A -> \Type) (DecPred P)
+  => (\lam a => T (p a), \lam a => \case p a \as b \return Decide (T b) \with {
+    | true => yes unit
+    | false => no (\lam x => x)
+  })
+
+\func FromDecToBool {A : \Type} (P : \Sigma (P : A -> \Type) (DecPred P)) : A -> Bool
+  => \lam a => \case P.2 a \with {
+    | yes _ => true
+    | no _ => false
+  }
+

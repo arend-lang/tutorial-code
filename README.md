@@ -1,2 +1,3 @@
-# tutorial-code
-Source code &amp; exercises in Arend's documentation
+# Arend Tutorial
+
+Source code & exercises in Arend's documentation

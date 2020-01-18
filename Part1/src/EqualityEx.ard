@@ -1,0 +1,74 @@
+\import Equality
+
+-- 1. Define congruence for functions with two arguments via transport.
+--    It is allowed to use any functions defined via transport.
+
+\func pmap2 {A B C : \Type} (f : A -> B -> C) {a a' : A} (p : a = a') {b b' : B} (q : b = b') : f a b = f a' b' => {?}
+
+-- 2. Prove that 'transport' can be defined via 'pmap' and 'repl' and vice versa.
+-- The function 'repl' says that if two types are equal then there exists a function between them.
+
+-- Define 'repl' via 'transport'.
+\func repl {A B : \Type} (p : A = B) (a : A) : B => {?}
+
+-- Define 'transport' via 'repl' and 'pmap'.
+\func transport' {A : \Type} (B : A -> \Type) {a a' : A} (p : a = a') (b : B a) : B a' => {?}
+
+-- 3. Prove that left = right without using 'transport' or 'coe'.
+
+\func left=right : left = right => {?}
+
+-- 4. Prove that a = a' and b = b' implies (a,b) = (a',b') without using 'transport'.
+
+\func pairEq {A B : \Type} {a a' : A} {b b' : B} (p : a = a') (q : b = b') : (a,b) = (a',b') => {?}
+
+-- 5. Prove that p = p' implies p.1 = p'.1 without using 'transport'.
+
+\func projEq {A : \Type} (B : A -> \Type) {p p' : \Sigma (x : A) (B x)} (t : p = p') : p.1 = p'.1 => {?}
+
+-- 6. Prove that (\lam x => not (not x)) = (\lam x => x).
+
+\func not (b : Bool) : Bool
+  | true => false
+  | false => true
+
+\func notNotId : (\lam x => not (not x)) = (\lam x => x) => {?}
+
+-- 7. Define factorial via Nat-rec (i.e., without recursion and pattern matching).
+
+-- 8. Prove associativity of Nat.+ via Nat-elim (i.e., without recursion and pattern matching).
+
+-- 9. Define recursor and eliminator for D.
+
+\data D
+  | con1 Nat
+  | con2 D D
+  | con3 (Nat -> D)
+
+-- 10. Define recursor and eliminator for List.
+
+\data List (A : \Type) | nil | cons A (List A)
+
+-- 11. We defined transport via coe.
+--     Define a special case of coe via transport.
+--     Is it possible to define transport via coe0?
+
+\func coe0 (A : I -> \Type) (a : A left) : A right => {?}
+
+-- 12. Define a function B right -> B left.
+
+\func Itr' {B : I -> \Type} (b : B right) : B left => {?}
+
+-- 13. Prove that 0 does not equal to suc x.
+
+\func zero/=suc (x : Nat) (p : 0 = suc x) : Empty => {?}
+
+-- 14. Prove that fac does not equal to suc.
+
+\open Nat(*)
+
+\func fac (n : Nat) : Nat
+  | 0 => 1
+  | suc n => suc n * fac n
+
+\func fac/=suc (p : fac = suc) : Empty => {?}

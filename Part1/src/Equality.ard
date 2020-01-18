@@ -1,0 +1,118 @@
+-------------------------------------------------
+-- Symmetry, transitivity, Leibnitz principle
+-------------------------------------------------
+
+\func Leibniz {A : \Type} {a a' : A}
+              (f : \Pi (P : A -> \Type) -> \Sigma (P a -> P a') (P a' -> P a)) : a = a'
+  => (f (\lam x => a = x)).1 idp
+
+\func transport {A : \Type} (B : A -> \Type) {a a' : A} (p : a = a') (b : B a) : B a'
+  => coe (\lam i => B (p @ i)) b right
+
+-- symmetry
+\func inv {A : \Type} {a a' : A} (p : a = a') : a' = a
+  => transport (\lam x => x = a) p idp
+
+-- transitivity
+\func trans {A : \Type} {a a' a'' : A} (p : a = a') (q : a' = a'') : a = a''
+  => transport (\lam x => a = x) q p
+
+-- congruence
+\func pmap {A B : \Type} (f : A -> B) {a a' : A} (p : a = a') : f a = f a'
+  => transport (\lam x => f a = f x) p idp
+
+-------------------------------------------------
+-- Definition of =
+-------------------------------------------------
+
+\func idp {A : \Type} {a : A} : a = a => path (\lam _ => a)
+
+\func pmap' {A B : \Type} (f : A -> B) {a a' : A} (p : a = a') : f a = f a'
+  => path (\lam i => f (p @ i))
+
+\func pmap-idp {A : \Type} {a a' : A} (p : a = a') : pmap' {A} (\lam x => x) p = p
+  => idp
+
+-------------------------------------------------
+-- Function extensionality
+-------------------------------------------------
+
+\func funExt {A : \Type} (B : A -> \Type) {f g : \Pi (a : A) -> B a}
+             (p : \Pi (a : A) -> f a = g a) : f = g
+  => path (\lam i => \lam a => p a @ i)
+
+\data \fixr 2 Either (A B : \Type)
+  | inl A
+  | inr B
+
+\data Empty
+
+\func lem : \Pi (X : \Type) -> Either X (X -> Empty) => {?}
+\func ugly_num : Nat => \case lem Nat \with { | Left => 0 | Right => 1 }
+
+-------------------------------------------------
+-- Eliminators
+-------------------------------------------------
+
+-- Dependent eliminator for Nat (induction).
+\func Nat-elim (P : Nat -> \Type)
+               (z : P zero)
+               (s : \Pi (n : Nat) -> P n -> P (suc n))
+               (x : Nat) : P x \elim x
+  | zero => z
+  | suc n => s n (Nat-elim P z s n)
+
+-- Non-dependent eliminator for Nat (recursion).
+\func Nat-rec (P : \Type)
+              (z : P)
+              (s : Nat -> P -> P)
+              (x : Nat) : P \elim x
+  | zero => z
+  | suc n => s n (Nat-rec P z s n)
+
+\data Bool | false | true
+
+-- Dependent eliminator for Bool (recursor for Bool is just 'if').
+\func Bool-elim (P : Bool -> \Type)
+                (t : P true)
+                (f : P false)
+                (x : Bool) : P x \elim x
+  | true => t
+  | false => f
+
+{-
+\func coe (P : I -> \Type)
+          (a : P left)
+          (i : I) : P i \elim i
+  | left => a
+-}
+
+-------------------------------------------------
+-- left = right
+-------------------------------------------------
+
+\func left=i (i : I) : left = i
+  -- | left => idp
+  => coe (\lam i => left = i) idp i
+
+-- In particular left = right.
+\func left=right : left = right => left=i right
+
+-------------------------------------------------
+-- Proofs of non-equalities
+-------------------------------------------------
+
+\data Unit | unit
+
+\func T (b : Bool) : \Type
+  | true => Unit
+  | false => Empty
+
+\func true/=false (p : true = false) : Empty => transport T p unit
+
+-- This function does not typecheck!
+{-
+\func TI (b : I)
+ | left => \Sigma
+ | right => Empty
+-}

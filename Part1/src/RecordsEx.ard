@@ -1,0 +1,39 @@
+\import Records
+
+-- 1. Define the function 'swap' in several ways.
+
+-- Using \cowith and field access.
+\func swap {A B : \Type} (p : Pair A B) : Pair B A => {?}
+
+-- Using \new and pattern matching.
+\func swap' {A B : \Type} (p : Pair A B) : Pair B A => {?}
+
+-- Using \new and field access.
+\func swap'' {A B : \Type} (p : Pair A B) : Pair B A => {?}
+
+-- 2. Prove that 'swap (swap p) = p'.
+
+\func swap-involutive {A B : \Type} (p : Pair A B) : swap (swap p) = p => {?}
+
+-- 3. Prove that the type 'PosNat 0' is empty, but the type 'PosNat 1' is not.
+
+\data Empty
+
+\func zero-isNotPos (p : PosNat 0) : Empty => {?}
+
+\func one-isPos : PosNat 1 => {?}
+
+-- 4. Define the \record consisting of pairs of coprime natural numbers.
+--    Define the type of natural numbers that are coprime with 60.
+
+-- 5. Define the class of monads, which extends the class of functors. Define \instance of this class for 'Maybe'.
+
+\data Maybe (A : \Type) | nothing | just A
+
+-- 6. Define instances for the class of monads for 'State' and 'State''.
+
+\record State (S A : \Type)
+  | state : S -> \Sigma S A
+
+\data State' (S A : \Type)
+  | state' (S -> \Sigma S A)

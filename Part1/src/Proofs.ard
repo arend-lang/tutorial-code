@@ -1,0 +1,103 @@
+-------------------------------------------------
+-- Curry-Howard correspondence
+-------------------------------------------------
+
+\data Empty
+
+\data Unit | unit
+
+\func absurd {A : \Type} (e : Empty) : A
+-- There are no patterns since Empty does not have constructors.
+
+-- This can be expressed more explicitly by means of the absurd patterns.
+-- This pattern indicates that the data type of the corresponding variable does not have constructors.
+-- If such a pattern is used, the right hand side of the clause can (and should) be omitted.
+\func absurd' {A : \Type} (e : Empty) : A \elim e
+  | () -- absurd pattern
+
+\func Unit-isTrue : Unit => unit
+
+\func \infixr 3 && (P Q : \Type) => \Sigma P Q
+
+-- This function proves that P -> Q -> (P & Q)
+\func &&-intro {P Q : \Type} (p : P) (q : Q) : \Sigma P Q => (p, q)
+
+-- This function proves that (P & Q) -> P
+\func &&-elim1 {P Q : \Type} (t : \Sigma P Q) : P => t.1
+
+-- This function proves that (P & Q) -> Q
+\func &&-elim2 {P Q : \Type} (t : \Sigma P Q) : Q => t.2
+
+\data \infixr 2 || (P Q : \Type)
+  | inl P
+  | inr Q
+
+-- This function proves that P -> (P || Q)
+\func ||-intro1 {P Q : \Type} (p : P) : P || Q => inl p
+
+-- This function proves that Q -> (P || Q)
+\func ||-intro2 {P Q : \Type} (q : Q) : P || Q => inr q
+
+-- This function proves that (P -> R) -> (Q -> R) -> (P || Q) -> R
+\func ||-elim {P Q R : \Type} (l : P -> R) (r : Q -> R) (x : P || Q) : R \elim x
+  | inl p => l p
+  | inr q => r q
+
+\func Not (A : \Type) => A -> Empty
+
+-------------------------------------------------
+-- Examples of propositions and proofs
+-------------------------------------------------
+
+\data Bool | true | false
+
+\func T (b : Bool) : \Type
+  | true => Unit
+  | false => Empty
+
+\func \infix 4 == (x y : Bool) : Bool
+  | true, true => true
+  | false, false => true
+  | _ , _ => false
+
+\func not (x : Bool) : Bool
+  | true => false
+  | false => true
+
+\func not-isInvolution (x : Bool) : T (not (not x) == x)
+  | true => unit -- if x is true, then T (not (not true) == true) evaluates to Unit
+  | false => unit -- if x is false, then T (not (not false) == false) again evaluates to Unit
+
+-- proof of reflexivity of == is analogous
+\func ==-refl (x : Bool) : T (x == x)
+  | true => unit
+  | false => unit
+
+-- This code doe not typecheck!
+-- \func not-isInvolution' (x : Bool) : T (not (not x) == x) => unit
+
+\func not-isIdempotent (x : Bool) : T (not (not x) == not x)
+  | true => {?} -- goal expression, an element of Empty is expected
+  | false => {?} -- goal expression, an element of Empty is expected
+
+-- we can prove negation of not-isIdempoten
+\func not-isIdempotent' (x : Bool) : T (not (not x) == not x) -> Empty
+  | true => \lam x => x -- a proof of Empty -> Empty
+  | false => \lam x => x -- again a proof of Empty -> Empty
+
+-- Sigma-types are used to express existential quantification
+\func lemma (x : Bool) : \Sigma (y : Bool) (T (x == y)) => (x, ==-refl x)
+
+\func higherOrderFunc (f : \Pi (x : Bool) -> T (x == x)) : T (true == true) => f true
+
+-------------------------------------------------
+-- Identity type
+-------------------------------------------------
+
+\func not-isInvolution'' (x : Bool) : not (not x) = x
+  | true => idp
+  | false => idp
+
+\func not-isIdempotent'' (x : Bool) : not (not x) = not x
+  | true => {?} -- goal expression, non-existing proof of true = false is expected
+  | false => {?} -- goal expression, non-existing proof of false = true is expected

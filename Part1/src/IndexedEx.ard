@@ -1,0 +1,55 @@
+\import Indexed
+
+-- 1. Implement the function 'lookup', which takes a list and a natural number n and returns the n-th element in the list.
+--    Note that it is impossible to define such a function without restrictions on n sice n can be greater than the size of the list.
+--    Therefore the function should also take a proof that n is in the right range: T (n < length xs).
+
+\func lookup => {?}
+
+-- 2. Implement function replicate for 'vec' and 'Vec' (this function creates the list of a given length filled with a
+-- given element).
+
+-- 3. Implement function 'map' for 'vec' and 'Vec'.
+
+-- 4. Implement function 'zipWith' for 'vec' and 'Vec'.
+--    The function must take lists of equal lengths.
+
+-- 5. Functions Fin n -> A correspond to lists of length n with elements in A.
+--    Implement the function that converts an element of Fin n -> A to element of Vec A n.
+
+\func funToVec {A : \Type} {n : Nat} (f : Fin n -> A) : Vec A n => {?}
+
+-- 6. Define the type of matrices and a number of functions for them:
+
+\func Mat (A : \Type) (n m : Nat) : \Type => {?}
+
+-- diagonal matrix with elements e on the diagonal and z at all other positions.
+
+\func diag {A : \Type} (z e : A) (n : Nat) : Mat A n n => {?}
+
+-- transposition
+
+\func transpose {A : \Type} {n m : Nat} (M : Mat A n m) : Mat A m n => {?}
+
+-- addition
+
+\func matAdd {A : \Type} (add : A -> A -> A) (n m : Nat) (M N : Mat A n m) : Mat A n m => {?}
+
+-- multiplication
+
+-- z is neutral under addition.
+\func matMul {A : \Type} (z : A) (add mul : A -> A -> A) (n m k : Nat) (M : Mat A n m) (N : Mat A m k) : Mat A n k => {?}
+
+-- 7. Define the type CTree A n of (complete and full) binary trees of height precisely n, which store elements in internal nodes, but not in leaves.
+--    The height of a leaf is 0.
+
+\data CTree (A : \Type) (n : Nat)
+
+-- 8. Define the type Tree A n of binary trees of height at most n, which store elements in internal nodes, but not in leaves.
+--    The height of a leaf is 0.
+
+\data Tree (A : \Type) (n : Nat)
+
+-- Define the function that computes the height of a tree.
+
+\func height {A : \Type} (n : Nat) (t : Tree A n) : Fin (suc n) => {?}

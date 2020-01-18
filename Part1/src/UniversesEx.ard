@@ -1,0 +1,33 @@
+\import Universes
+
+-- 1. Calculate levels in each of the the invocations of 'id''' below.
+--    Specify explicitly result types for all idTest*.
+
+\func id'' {A : \Type} (a : A) => a
+
+\func idTest1 => id'' (id'' id)
+\func idTest2 => id'' Maybe
+\func idTest3 => id'' Functor
+\func idTest4 => id'' (Functor Maybe)
+\func idTest5 (f : \Pi {A B : \Type} -> (A -> B) -> Maybe A -> Maybe B) => id'' (Functor Maybe f)
+
+-- 2. Define 'div' via 'Nat-ind'.
+
+\func div (n k : Nat) (p : T (0 < k)) : Nat => {?}
+
+-- 3. Prove the following induction principle for lists:
+
+\func length {A : \Type} (xs : List A) : Nat
+  | nil => 0
+  | cons _ xs => suc (length xs)
+
+\func List-ind
+  {A : \Type}
+  (E : List A -> \Type)
+  (r : \Pi (xs : List A) -> (\Pi (ys : List A) -> T (length ys < length xs) -> E ys) -> E xs)
+  (xs : List A) : E xs => {?}
+
+-- 4. Implement function 'filter' and prove that it is correct, that is that the following holds:
+--    * 'filter p xs' is a sublist of 'xs'
+--    * All elements of 'filter p xs' satisfy the predicate 'p'
+--    * Any sublist of 'xs' with this property is a sublist of 'filter p xs'

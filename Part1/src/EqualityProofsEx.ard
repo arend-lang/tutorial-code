@@ -1,0 +1,64 @@
+\import EqualityProofs
+
+-- 1. The operator 'J' has a different form, which we denote 'Jalt'. Prove that 'J' and 'Jalt' are equivalent, i.e.
+-- define 'J' in terms of 'Jalt' and vice versa.
+
+-- Define 'Jalt' via 'J'. You can use only 'J', 'idp' and everything definable in terms of these constructs.
+
+\func Jalt {A : \Type} (B : \Pi (a a' : A) -> a = a' -> \Type)
+           (b : \Pi (a : A) -> B a a idp)
+           {a a' : A} (p : a = a') : B a a' p => {?}
+
+-- Define 'J' via 'Jalt'. You can use only 'Jalt', 'idp' and everything definable in terms of these constructs (but not pattern matching on 'idp').
+-- See the end of this file for a hint.
+
+\func transport' {A : \Type} (B : A -> \Type) {a a' : A} (p : a = a') (b : B a) : B a' => {?}
+
+\func sigma-contr {A : \Type} {a : A} (p : \Sigma (x : A) (a = x)) : (a,idp) = {\Sigma (x : A) (a = x)} p => {?}
+
+\func J' {A : \Type} {a : A} (B : \Pi (a' : A) -> a = a' -> \Type)
+         (b : B a idp)
+         {a' : A} (p : a = a') : B a' p => {?}
+
+-- 2. Prove that 'vnil' is an identity for 'v++'.
+
+\func vnil-rightId {A : \Type} {n : Nat} (xs : Vec A n) : transport (Vec A) (+-comm 0 n) (xs v++ vnil) = xs => {?}
+
+-- 3. Prove that all definitions of <= given in the module are equivalent.
+
+-- 4. Define the membership predicate 'In' for lists.
+
+\data List (A : \Type) | nil | cons A (List A)
+
+\data In {A : \Type} (a : A) (xs : List A)
+
+-- 5. Define reflexive and transitive closure of a relation.
+--    That is 'ReflTransClosure R' -- is the minimal reflexive and transitive relation containing R.
+
+\data ReflTransClosure {A : \Type} (R : A -> A -> \Type) (x y : A)
+
+-- 6. Prove that if 'R' is already reflexive and transitive then 'ReflTransClosure R' is equivalent to 'R'.
+
+\func \infix 4 <-> {A : \Type} (P Q : A -> A -> \Type) => \Pi (x y : A) -> \Sigma (P x y -> Q x y) (Q x y -> P x y)
+
+\func ReflTransClosure-lem {A : \Type} (R : A -> A -> \Type) (refl : \Pi (x : A) -> R x x) (trans : \Pi (x y z : A) -> R x y -> R y z -> R x z) : R <-> ReflTransClosure R => {?}
+
+-- 7. Define the predicate xs <= ys for lists, which says "the list xs is a sublist of ys".
+
+-- 8. Prove that 'filter xs <= xs' for any list xs.
+
+
+
+
+
+
+
+
+
+
+
+
+-- Hint for the exercise 1:
+-- 1. Define 'transport' via 'Jalt'.
+-- 2. Prove that the type \Sigma (x : A) (a = x) is one-element type, that is for all p : \Sigma (x : A) (a = x) holds (x,idp) = p.
+-- 3. Use this to define 'J'.

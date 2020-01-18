@@ -1,0 +1,145 @@
+
+-------------------------------------------------
+-- Hierarchies of universes, polymorphism
+-------------------------------------------------
+
+\func tt : \Type2 => \Type0 -> \Type1
+
+\func id (A : \Type) (a : A) => a
+
+\func id' (A : \Type \lp) (a : A) => a
+
+\func type : \Type => \Type
+
+\func type' : \Type (\suc \lp) => \Type \lp
+
+\func test0 : \Type (\max (\suc (\suc \lp)) 4) => \Type (\max \lp 3) -> \Type (\suc \lp)
+
+\func test1 => id Nat 0
+\func test2 => id \Type0 Nat
+\func test3 => id (\Type0 -> \Type1) (\lam X => X)
+\func test4 => id _ id
+\func test4' => id (\Pi (A : \Type) -> A -> A) id
+
+\func test5 => id (\suc \lp) (\Type \lp) Nat
+
+\func test5' => id (\level (\suc \lp) _) (\Type \lp) Nat
+\func test6 => id (\level 2 _) \Type1 \Type0
+
+\data Magma (A : \Type)
+  | con (A -> A -> A)
+
+\data MagmaEx (A : \Type) (B : \Type5)
+  | conEx (A -> A -> A)
+
+\func test7 : \Type \lp => MagmaEx \lp Nat \Type4
+
+\class Magma' (A : \Type)
+  | \infixl 6 ** : A -> A -> A
+
+\func test8 : \Type (\suc \lp) => Magma' \lp
+
+\func test9 : \Type \lp => Magma' \lp Nat
+
+\class Functor (F : \Type -> \Type)
+  | fmap {A B : \Type} : (A -> B) -> F A -> F B
+
+\data Maybe (A : \Type) | nothing | just A
+
+\func test10 : \Type (\suc \lp) => Functor \lp Maybe
+
+-------------------------------------------------
+-- Induction principles
+-------------------------------------------------
+\data Empty
+
+\data Unit | unit
+
+\data Bool | false | true
+
+\func T (b : Bool) : \Type
+  | true => Unit
+  | false => Empty
+
+\func \infix 4 < (x y : Nat) : Bool
+  | 0, 0 => false
+  | 0, suc y => true
+  | suc x, 0 => false
+  | suc x, suc y => x < y
+
+\func Nat-ind (E : Nat -> \Type)
+              (r : \Pi (n : Nat) -> (\Pi (k : Nat) -> T (k < n) -> E k) -> E n)
+              (n : Nat) : E n => {?} -- prove this as an exercise
+
+-------------------------------------------------
+-- Induction-recusrion
+-------------------------------------------------
+
+\func isEven (n : Nat) : Bool
+  | 0 => true
+  | suc n => isOdd n
+
+\func isOdd (n : Nat) : Bool
+  | 0 => false
+  | suc n => isEven n
+
+\data IsEven (n : Nat) : \Type \with
+  | 0 => zero-isEven
+  | suc n => suc-isEven (IsOdd n)
+
+\data IsOdd (n : Nat) : \Type \with
+  | suc n => suc-isOdd (IsEven n)
+
+-------------------------------------------------
+-- Universes via induction-recusrion
+-------------------------------------------------
+
+\data Type
+  | nat
+  | list Type
+  | arr Type Type
+
+\data List (A : \Type) | nil | cons A (List A)
+
+\func El (t : Type) : \Type0 \elim t
+  | nat => Nat
+  | list t => List (El t)
+  | arr t1 t2 => El t1 -> El t2
+
+\func idc (t : Type) (x : El t) : El t => x
+
+\data Type' : \Set0 -- \Set0 is almost the same as \Type0, we will discuss the difference later
+  | nat'
+  | list' Type'
+  | pi' (a : Type') (El' a -> Type')
+
+\func El' (t : Type') : \Type0 \elim t
+  | nat' => Nat
+  | list' t => List (El' t)
+  | pi' t1 t2 => \Pi (a : El' t1) -> El' (t2 a)
+
+-------------------------------------------------
+-- Completeness of specifications
+-------------------------------------------------
+
+\func \infixl 6 + (x y : Nat) : Nat \elim y
+  | 0 => x
+  | suc y => suc (x + y)
+
+\func \infixl 7 * (x y : Nat) : Nat \elim y
+  | 0 => 0
+  | suc y => x * y + x
+
+-- P1 is correct specification for 'fac', but incomplete.
+\func P1 (f : Nat -> Nat) => f 3 = 6
+-- P2 is complete, but not correct.
+\func P2 (f : Nat -> Nat) => Empty
+-- P3 -- correct and complete specification for 'fac'.
+\func P3 (f : Nat -> Nat) => \Sigma (f 0 = 1) (\Pi (n : Nat) -> f (suc n) = suc n * f n)
+
+\func isSorted {A : \Type} (x : List A) : \Type => {?}
+\func isPerm {A : \Type} (x y : List A) : \Type => {?}
+
+\func P {A : \Type} (f : List A -> List A) => \Pi (xs : List A) -> \Sigma (isSorted (f xs)) (isPerm (f xs) xs)
+-- where 'isSorted xs' is true iff  'xs' is sorted and
+-- 'isPerm xs ys' is true iff 'xs' is a permutation of 'ys'.

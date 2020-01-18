@@ -1,0 +1,42 @@
+-- 1. Define priorities of the functions f1, f2, f3, f4, f5 and f6 so that the function 'test' typechecks.
+
+\func f1 (x y : Nat) => x
+\func f2 : Nat => 0
+\func f3 (f : Nat -> Nat) (z : Nat) : Int => 0
+\func f4 : Nat => 0
+\func f5 => f1
+\func f6 => f4
+
+\func test => f1 f2 f3 f4 f5 f6
+
+-- 2. Define in Arend the function 'if', which takes a boolean value b and two elements of an arbitrary type A
+--    and return the first element when b equals to true and the second one otherwise.
+
+\data Bool | true | false
+
+-- 3. Define || via 'if'.
+
+\func \infixr 2 || (x y : Bool) : Bool => {?}
+
+-- 4. Define the power and the factorial functions for natural numbers.
+
+\func \infixr 8 ^ (x y : Nat) => {?}
+
+\func fac (x : Nat) => {?}
+
+-- 5. Define mod and gcd.
+
+\func mod (x y : Nat) => {?}
+
+\func gcd (x y : Nat) => {?}
+
+-- 6. Define the map function.
+
+\data List (A : \Type) | nil | \infixr 5 :: A (List A)
+
+\func map {A B : \Type} (f : A -> B) (xs : List A) : List B => {?}
+
+-- 7. Define the transpose function.
+--    It takes a list of lists considered as a matrix and returns a list of lists which represents the transposed matrix.
+--    Example:
+--    transpose ((1 :: 2 :: 3 :: nil) :: (4 :: 5 :: 6 :: nil)) == ((1 :: 4 :: nil) :: (2 :: 5 :: nil) :: (3 :: 6 :: nil))

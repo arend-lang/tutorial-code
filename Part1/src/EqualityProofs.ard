@@ -1,0 +1,159 @@
+
+-------------------------------------------------
+-- Commutativity of +
+-------------------------------------------------
+
+-- transport B idp b ==> b
+
+-- recall the definition of transport:
+\func transport {A : \Type} (B : A -> \Type) {a a' : A} (p : a = a') (b : B a)
+  => coe (\lam i => B (p @ i)) b right
+
+-- indeed, coe (\lam i => B (idp @ i)) b right ==>
+-- ==> coe (\lam i => B a) b right ==> b
+
+\func \infixr 5 *> {A : \Type} {a a' a'' : A} (p : a = a') (q : a' = a'') : a = a''
+  => transport (\lam x => a = x) q p
+
+-- symmetry
+\func inv {A : \Type} {a a' : A} (p : a = a') : a' = a
+  => transport (\lam x => x = a) p idp
+
+-- congruence
+\func pmap {A B : \Type} (f : A -> B) {a a' : A} (p : a = a') : f a = f a'
+  => transport (\lam x => f a = f x) p idp
+
+\func \infixl 6 + (x y : Nat) : Nat \elim y
+  | 0 => x
+  | suc y => suc (x + y)
+
+\func +-comm (n m : Nat) : n + m = m + n
+  | 0, 0 => idp
+  | suc n, 0 => pmap suc (+-comm n 0)
+  | 0, suc m => pmap suc (+-comm 0 m)
+  | suc n, suc m => pmap suc (+-comm (suc n) m *> pmap suc (inv (+-comm n m)) *> +-comm n (suc m))
+
+-------------------------------------------------
+-- Equational reasoning, proof of +-comm rewritten
+-------------------------------------------------
+
+\func \fix 2 qed {A : \Type} (a : A) : a = a => idp
+
+\func \infixr 1 >== {A : \Type} {a a' a'' : A} (p : a = a') (q : a' = a'') => p *> q
+
+\func \infix 2 ==< {A : \Type} (a : A) {a' : A} (p : a = a') => p
+
+\func +-comm' (n m : Nat) : n + m = m + n
+  | 0, 0 => idp
+  | suc n, 0 => pmap suc (+-comm' n 0)
+  | 0, suc m => pmap suc (+-comm' 0 m)
+  | suc n, suc m => pmap suc (
+      suc n + m   ==< +-comm' (suc n) m >==
+      suc (m + n) ==< pmap suc (inv (+-comm' n m)) >==
+      suc (n + m) ==< +-comm' n (suc m) >==
+      suc m + n   `qed
+  )
+
+-- recall that:
+-- x `f == f x -- postfix notation
+-- x `f` y == f x y -- infix notation
+
+
+-------------------------------------------------
+-- J operator
+-------------------------------------------------
+
+\func J
+  {A : \Type} {a : A}
+  (B : \Pi (a' : A) -> a = a' -> \Type)
+  (b : B a idp)
+  {a' : A} (p : a = a')
+  : B a' p
+  -- the details of the definition are not important for now
+  => coe (\lam i => B (p @ i) (psqueeze p i)) b right
+  \where
+    \func psqueeze  {A : \Type} {a a' : A} (p : a = a') (i : I) : a = p @ i => path (\lam j => p @ I.squeeze i j)
+
+\func K {A : \Type} {a : A} (B : a = a -> \Type)
+        (b : B idp)
+        (p : a = a) : B p => {?}
+
+\func transport' {A : \Type} (B : A -> \Type) {a a' : A} (p : a = a') (b : B a) : B a' \elim p
+  | idp => b
+
+-------------------------------------------------
+-- Associativity of append for vectors
+-------------------------------------------------
+
+\data Vec (A : \Type) (n : Nat) \elim n
+  | zero => vnil
+  | suc n => vcons A (Vec A n)
+
+\func \infixl 4 v++ {A : \Type} {n m : Nat} (xs : Vec A n) (ys : Vec A m) : Vec A (m + n) \elim n, xs
+  | 0, vnil => ys
+  | suc n, vcons x xs => vcons x (xs v++ ys)
+
+\func +-assoc (x y z : Nat) : (x + y) + z = x + (y + z) \elim z
+  | 0 => idp
+  | suc z => pmap suc (+-assoc x y z)
+
+\func v++-assoc {A : \Type} {n m k : Nat} (xs : Vec A n) (ys : Vec A m) (zs : Vec A k)
+  : (xs v++ ys) v++ zs = transport (Vec A) (+-assoc k m n) (xs v++ (ys v++ zs)) \elim n, xs
+  | 0, vnil => idp
+  | suc n, vcons x xs =>
+    pmap (vcons x) (v++-assoc xs ys zs) *>
+    inv (transport-vcons-comm (+-assoc k m n) x (xs v++ (ys v++ zs)))
+  \where
+    -- transport commutes with all constructors
+    -- here is the proof that it commutes with vcons
+    \func transport-vcons-comm {A : \Type} {n m : Nat} (p : n = m) (x : A) (xs : Vec A n)
+      : transport (Vec A) (pmap suc p) (vcons x xs) = vcons x (transport (Vec A) p xs)
+      | idp, _, _ => idp
+{- This function can be defined with J as follows:
+=> J (\lam m' p' => transport (Vec A) (pmap suc p') (vcons x xs) = vcons x (transport (Vec A) p' xs))
+     idp
+     p
+-}
+
+-------------------------------------------------
+-- Predicates
+-------------------------------------------------
+
+-- Definition of <= via equality.
+\func LessOrEq''' (n m : Nat) => \Sigma (k : Nat) (k + n = m)
+
+\data Empty
+
+\data Unit | unit
+
+-- Recursive definition of <=.
+\func lessOrEq (n m : Nat) : \Type
+  | 0, _ => Unit
+  | suc _, 0 => Empty
+  | suc n, suc m => lessOrEq n m
+
+-- First inductive definition of <=.
+\data LessOrEq (n m : Nat) \with
+  | 0, m => z<=n
+  | suc n, suc m => s<=s (LessOrEq n m)
+
+\func test11 : LessOrEq 0 100 => z<=n
+\func test12 : LessOrEq 3 67 => s<=s (s<=s (s<=s z<=n))
+-- Of course, there is no proof of 1 <= 0.
+-- \func test10 : LessOrEq 1 0 => ....
+
+-- Second inductive definition of <=.
+-- This is a modification of the first inductive definition,
+-- where we avoid constructor patterns.
+\data LessOrEq' (n m : Nat)
+  | z<=n' (n = 0)
+  | s<=s' {n' m' : Nat} (n = suc n') (m = suc m') (LessOrEq' n' m')
+
+-- Third inductive definition of <=.
+\data LessOrEq'' (n m : Nat) \elim m
+  | suc m => <=-step (LessOrEq'' n m)
+  | m => <=-refl (n = m)
+
+
+
+

@@ -1,0 +1,84 @@
+\data List (A : \Type) | nil | cons A (List A)
+
+\data Either (A B : \Type) | inl A | inr B
+
+\class Preorder (E : \Type)
+  | \infix 4 <= : E -> E -> \Type
+  | <=-refl {x : E} : x <= x
+  | <=-trans {x y z : E} : x <= y -> y <= z -> x <= z
+
+\class TotalPreorder \extends Preorder
+  | totality (x y : E) : Either (x <= y) (y <= x)
+
+\func sort {A : TotalPreorder} (xs : List A) : List A
+  | nil => nil
+  | cons a xs => insert a (sort xs)
+  \where
+    \func insert {A : TotalPreorder} (a : A) (xs : List A) : List A \elim xs
+      | nil => cons a nil
+      | cons x xs => \case totality x a \with {
+        | inl _ => cons x (insert a xs)
+        | inr _ => cons a (cons x xs)
+      }
+
+\data Perm {A : \Type} (xs ys : List A) \elim xs, ys
+  | nil, nil => perm-nil
+  | cons x xs, cons y ys => perm-cons (x = y) (Perm xs ys)
+  | xs, ys => perm-trans {zs : List A} (Perm xs zs) (Perm zs ys)
+  | cons x (cons x' xs), cons y (cons y' ys) => perm-perm (x = y') (x' = y) (xs = ys)
+
+\func perm-refl {A : \Type} {xs : List A} : Perm xs xs \elim xs
+  | nil => perm-nil
+  | cons a l => perm-cons idp perm-refl
+
+\func sort-perm {A : TotalPreorder} (xs : List A) : Perm xs (sort xs) \elim xs
+  | nil => perm-nil
+  | cons a l => perm-trans (perm-cons idp (sort-perm l)) (insert-perm a (sort l))
+  \where
+    \func insert-perm {A : TotalPreorder} (a : A) (xs : List A) : Perm (cons a xs) (sort.insert a xs) \elim xs
+      | nil => perm-cons idp perm-nil
+      | cons b l => \case totality b a \as r \return
+                                              Perm (cons a (cons b l)) (\case r \with {
+                                                | inl _ => cons b (sort.insert a l)
+                                                | inr _ => cons a (cons b l)
+                                              }) \with {
+        | inl b<=a => perm-trans (perm-perm idp idp idp) (perm-cons idp (insert-perm a l))
+        | inr a<=b => perm-refl
+      }
+
+\func head {A : \Type} (def : A) (xs : List A) : A \elim xs
+  | nil => def
+  | cons a _ => a
+
+\data IsSorted {A : Preorder} (xs : List A) \elim xs
+  | nil => nil-sorted
+  | cons x xs => cons-sorted (x <= head x xs) (IsSorted xs)
+
+\func sort-sorted {A : TotalPreorder} (xs : List A) : IsSorted (sort xs) \elim xs
+  | nil => nil-sorted
+  | cons a l => insert-sorted a (sort-sorted l)
+  \where {
+    \func insert-lem {A : TotalPreorder} (a x : A) (l : List A) (a<=x : a <= x) (a<=l : a <= head a l) : a <= head a (sort.insert x l) \elim l
+      | nil => a<=x
+      | cons b l => \case totality b x \as r \return
+                                              a <= head a (\case r \with {
+                                                | inl _ => cons b (sort.insert x l)
+                                                | inr _ => cons x (cons b l)
+                                              }) \with {
+        | inl _ => a<=l
+        | inr _ => a<=x
+      }
+
+    \func insert-sorted {A : TotalPreorder} (x : A) {xs : List A} (xs-sorted : IsSorted xs) : IsSorted (sort.insert x xs) \elim xs
+      | nil => cons-sorted <=-refl nil-sorted
+      | cons a l => \case totality a x \as r \return
+                                              IsSorted (\case r \with {
+                                                | inl _ => cons a (sort.insert x l)
+                                                | inr _ => cons x (cons a l)
+                                              }) \with {
+        | inl a<=x => \case xs-sorted \with {
+          | cons-sorted a<=l l-sorted => cons-sorted (insert-lem a x l a<=x a<=l) (insert-sorted x l-sorted)
+        }
+        | inr x<=a => cons-sorted x<=a xs-sorted
+      }
+  }

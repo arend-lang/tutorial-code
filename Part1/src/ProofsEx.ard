@@ -1,0 +1,73 @@
+\import Proofs
+\open Nat(+,*)
+
+-- 1. Prove that (P -> Q -> R) -> (P -> Q) -> P -> S
+
+\func t1 {P Q R : \Type} (r : P -> Q -> R) (q : P -> Q) (p : P) : R => {?}
+
+-- 2. Prove that ((P -> Q -> R) -> P) -> (P -> R) -> R
+
+\func t2 {P Q R : \Type} (p : (P -> Q -> R) -> P) (r : P -> R) : R => {?}
+
+-- 3. Prove that (P && Q -> R) -> P -> Q -> R
+
+\func t3 {P Q R : \Type} (f : \Sigma P Q -> R) (p : P) (q : Q) : R => {?}
+
+-- 4. Formulate and prove t5 : (P -> Q -> R) -> P && Q -> R
+
+-- 5. Prove that (P -> R) -> (Q -> R) -> P || Q -> R
+
+\func t4 {P Q R : \Type} (f : P -> R) (g : Q -> R) (h : P || Q) : R => {?}
+
+-- 6. Formulate and prove t6 : (P || Q -> P && Q) -> (P -> Q) && (Q -> P)
+
+-- 7. Russell's paradox shows that there is no set of all sets. If such a set exists, then we can form the set `B` of sets which are not members of themselves.
+--    Then `B` belongs to itself if and only if it is not.
+--    This implies a contradiction.
+--    Cantor's theorem states that there is no set `X` with a surjection from `X` onto the set of subsets of `X`.
+--    Its proof also constructs a proposition which is true if and only if it is false.
+--    Prove that more generally the existence of any such proposition implies a contradiction.
+
+\func t7 {P : \Type} (f : P -> Not P) (g : Not P -> P) : Empty => {?}
+
+-- 8. Prove that if, for every x : Nat, P x is true, then there exists x : Nat such that P x is true.
+
+\func t8 (P : Nat -> \Type) (h : \Pi (x : Nat) -> P x) : \Sigma (x : Nat) (P x) => {?}
+
+-- 9. Prove that if there is no x : Nat such that P x holds, then P 3 is false.
+
+\func t9 (P : Nat -> \Type) (h : Not (\Sigma (x : Nat) (P x))) : Not (P 3) => {?}
+
+-- 10. Formulate and prove the following proposition:
+--     t10 : If, for every x : Nat, P x implies Q x, then the existence of an element x : Nat for which P x is true implies the existence of an element x : Nat for which Q x is true.
+
+-- 11. Formulate and prove the following proposition:
+--     t11 : If, for every x : Nat, either P x is false or Q x is false, then P 3 implies that Q 3 is false.
+
+-- 12. Prove associativity of `and` and `or`.
+
+\func \infixl 6 and (a b : Bool) : Bool \elim a, b
+  | true, true => true
+  | true, false => false
+  | false, _ => false
+
+\func \infixl 4 or (a b : Bool) : Bool \elim a, b
+  | true, _ => true
+  | _, true => true
+  | false, false => false
+
+\func and-assoc (x y z : Bool) : (x and y) and z = x and (y and z) => {?}
+
+\func or-assoc (x y z : Bool) : (x or y) or z = x or (y or z) => {?}
+
+-- 13. Prove that 2 * 2 equals to 4.
+
+-- 14. Prove associativity of ++.
+
+\data List (A : \Type) | nil | cons A (List A)
+
+\func \infixl 6 ++ {A : \Type} (xs ys : List A) : List A \elim xs
+  | nil => ys
+  | cons x xs => cons x (xs ++ ys)
+
+\func ++-assoc {A : \Type} (xs ys zs : List A) : (xs ++ ys) ++ zs = xs ++ (ys ++ zs) => {?}

@@ -1,0 +1,295 @@
+\open Nat
+
+-------------------------------------------------
+-- Functions
+-------------------------------------------------
+
+\func f => 0
+{- Haskell:
+   f = 0
+-}
+
+\func f' : Nat => 0
+{- Haskell:
+   f :: Nat
+   f = 0
+-}
+
+\func id (x : Nat) => x -- identity function on natural numbers
+
+\func id' (x : Nat) : Nat => x -- the same, but with explicit result type
+{- Haskell:
+   id :: Nat -> Nat
+   id x = x
+-}
+
+\func foo (x _ : Nat) (_ : Int) => x -- simply returning the first argument
+{- Haskell:
+   foo :: Nat -> Nat -> Int -> Nat
+   foo x y z = x
+-}
+
+-- \func id'' x => x -- this definition is not correct!
+{- Haskell:
+   id'' x = x
+-}
+
+-- types of parameters cannot be infered as before
+\func foo' => \lam (x _ : Nat) (_ : Int) => x
+-- but types of parameters can be omitted if the result type is specified explicitly
+\func foo'' : Nat -> Nat -> Int -> Nat => \lam x _ _ => x
+{- Haskell:
+   foo'' :: Nat -> Nat -> Int -> Nat
+   foo'' = \x y z -> x
+-}
+
+-------------------------------------------------
+-- Infix operators
+-------------------------------------------------
+
+\func \infixl 6 $$ (x y : Nat) => x
+\func test => 3 $$ 7 -- test returns 3
+{- Haskell:
+   infixl 6 $$
+   ($$) x y = x
+   test = 3 $$ 7
+-}
+
+\func ff (x y : Nat) => x
+\func ff_test => 0 `ff` 1
+{- Haskell:
+   ff x y = x
+   ff_test = 3 `ff` 7
+-}
+
+\func \infix 6 %% (x y : Nat) => x
+\func %%-test => %% 3 7 -- no need to surround %% with ( )
+{- Haskell:
+   infix 5 %%
+   (%%) x y = x
+   pp_test = (%%) 3 7
+-}
+
+-------------------------------------------------
+-- Data definitions
+-------------------------------------------------
+
+\data Empty
+{- Haskell:
+   data Empty
+-}
+
+\data Unit | unit
+{- Haskell:
+   data Unit = Unit
+-}
+
+\data Bool | false | true
+{- Haskell:
+   data Bool = False | True
+-}
+
+\func not (x : Bool) : Bool \with -- keyword \with can be omitted
+  | true => false
+  | false => true
+{- Haskell:
+   not :: Bool -> Bool
+   not True = False
+   not False = True
+-}
+
+\func if (x : Bool) (t e : Nat) : Nat \elim x
+  | true => t
+  | false => e
+{- Haskell:
+   if :: Bool -> Nat -> Nat -> Nat
+   if True t e = t
+   if False t e = e
+-}
+
+{-
+\data K | k (K -> K)
+\func I => k (\lam x => x)
+\func Kc => k (\lam x => k (\lam _ => x))
+\func app (f a : K) : K \elim f
+  | k f' => f' a
+\func omega => k (\lam x => app x x)
+-}
+
+-- The definition of Nat
+-- \data Nat | zero | suc Nat
+
+-- the following functions are equivalent
+\func three => suc (suc (suc zero))
+\func three' => 3
+
+-- there is no limit on the size of numbers
+\func bigNumber => 1000000000000000000000000
+
+\func \infixl 6 + (x y : Nat) : Nat \elim y
+  | 0 => x
+  | suc y => suc (x + y)
+{- Haskell:
+   (+) :: Nat -> Nat -> Nat
+   x + Zero = x
+   x + Suc y = Suc (x + y)
+-}
+
+-- If n is a variable, then n + 2 evaluates to suc (suc n),
+-- but 2 + n does not as it is already in the normal form.
+-- This behaviour depends on the definition of +, namely,
+-- the argument chosen for pattern matching.
+
+\func \infixl 7 * (x y : Nat) : Nat \elim y
+  | 0 => 0
+  | suc y => x * y + x
+{- Haskell:
+   (*) :: Nat -> Nat -> Nat
+   x * Zero = 0
+   x * Suc y = x * y + x
+-}
+
+\data BinNat
+  | zero'
+  | sh+1 BinNat -- x*2+1
+  | sh+2 BinNat -- x*2+2
+
+-------------------------------------------------
+-- Termination, div
+-------------------------------------------------
+
+-- \func theorem : 0 = 1 => theorem
+
+\func \infixl 6 - (x y : Nat) : Nat
+  | 0, _ => 0
+  | suc x, 0 => suc x
+  | suc x, suc y => x - y
+
+\func \infix 4 < (x y : Nat) : Bool
+  | 0, 0 => false
+  | 0, suc y => true
+  | suc x, 0 => false
+  | suc x, suc y => x < y
+
+-- An obvious but not correct definition:
+-- \func div (x y : Nat) : Nat => if (x < y) 0 (suc (div (x - y) y))
+
+\func div (x y : Nat) => div' x x y
+  \where
+    \func div' (s x y : Nat) : Nat \elim s
+      | 0 => 0
+      | suc s => if (x < y) 0 (suc (div' s (x - y) y))
+
+-------------------------------------------------
+-- Polymorphism
+-------------------------------------------------
+
+\func id'' (A : \Type) (a : A) => a
+{- Haskell:
+   id'' :: a -> a
+   id'' x = x
+-}
+
+-- the syntax A -> B is used for types of functions,
+--                         the codomain of which does not depend on the argument
+-- for example, (id Nat) has type Nat -> Nat
+-- Pi-types generalize them, allowing codomain to depend on the argument
+\func idType : \Pi (A : \Type) (a : A) -> A => id''
+{- Haskell:
+   idType :: a -> a
+   idType = id''
+-}
+
+-------------------------------------------------
+-- Implicit arguments
+-------------------------------------------------
+
+\func idTest => id'' _ 0
+
+\func id''' {A : \Type} (a : A) => a
+
+\func idTest' => id''' 0
+\func idTest'' => id''' {Nat} 0 -- implicit arguments can be specifyed explicitly
+
+-------------------------------------------------
+-- List, append
+-------------------------------------------------
+
+\data List (A : \Type) | nil | cons A (List A)
+{- Haskell:
+   data List a = Nil | Cons a (List a)
+-}
+
+-- Constructors have implicit parameters for each of the parameters of data type
+\func emptyList => nil {Nat}
+
+-- Operator 'append'
+\func \infixl 6 ++ {A : \Type} (xs ys : List A) : List A \elim xs
+  | nil => ys
+  | cons x xs => cons x (xs ++ ys)
+{- Haskell:
+   (++) :: List a -> List A -> List a
+   Nil ++ ys = ys
+   cons x xs ++ ys = cons x (xs ++ ys)
+-}
+
+-------------------------------------------------
+-- Namespaces and modules
+-------------------------------------------------
+
+\func f'' => g \where \func g => 0
+
+\func gTest => f''.g
+
+\func letExample => \let
+  | x => 1
+  | y => x + x
+  \in x + y * y
+
+\module M1 \where {
+  \func f => 82
+  \func g => 77
+  \func h => 25
+}
+
+-- definitions f, g and h are unavailable in the current namespace
+-- they should be accessed with the prefix M1.
+\func moduleTest => (M1.f,M1.g,M1.h)
+
+\module M2 \where {
+  \open M1
+  \func t => f
+  \func t' => g
+  \func t'' => h
+}
+
+\module M3 \where {
+  \open M1(f,g)
+  \func t => f
+  \func t' => g
+  \func t'' => M1.h -- h is not opened and must be accessed with prefix
+}
+
+\module M4 \where {
+  \func functionModule => 34
+    \where {
+      \func f1 => 42
+      \func f2 => 61
+      \func f3 => 29
+    }
+  \func t => functionModule.f1
+  \func t' => functionModule.f2
+  \func t'' => (f1, f3)
+    \where \open functionModule(f1,f3)
+  -- this \open affects everything in \where-block for t''as well as t''
+}
+
+\module M5 \where {
+  \open M2 \hiding (t') -- open all definitions except for t'
+  \open M3 (t \as M3_t) -- open just t and rename it to M3_t
+  \open M4 \using (t \as M4_t) -- open all definition and rename t to M4_t
+  \func t'' => (M3_t, M4_t, t', t, functionModule, functionModule.f1, functionModule.f2, functionModule.f3)
+  \func t''' => (t'', M2.t'', M4.t'')
+  -- t'' in the current module clashes with t'' from M2 and M4,
+  -- the latter definitions should be accessed with prefix
+}

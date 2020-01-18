@@ -1,0 +1,153 @@
+-------------------------------------------------
+-- Insertion sort and reverse
+-------------------------------------------------
+
+\data Bool | false | true
+
+\data List (A : \Type) | nil | cons A (List A)
+
+\func if {A : \Type} (b : Bool) (t e : A) : A \elim b
+  | true => t
+  | false => e
+
+\func sort {A : \Type} (less : A -> A -> Bool) (xs : List A) : List A \elim xs
+  | nil => nil
+  | cons x xs => insert less x (sort less xs)
+  \where
+    \func insert {A : \Type} (less : A -> A -> Bool) (x : A) (xs : List A) : List A \elim xs
+      | nil => cons x nil
+      | cons x' xs => if (less x x') (cons x (cons x' xs)) (cons x' (insert less x xs))
+
+\data Empty
+
+\data Unit | unit
+
+\func T (b : Bool) : \Type
+  | true => Unit
+  | false => Empty
+
+\func \infixl 6 && (a b : Bool) : Bool \elim a, b
+  | true, true => true
+  | true, false => false
+  | false, _ => false
+
+\func isLinOrder {A : \Type} (lessOrEq : A -> A -> Bool) : \Type => {?}
+\func isSorted {A : \Type} (lessOrEq : A -> A -> Bool) (xs : List A) : \Type => {?}
+-- isPerm says that xs' is permutation of xs
+\func isPerm {A : \Type} (xs xs' : List A) : \Type => {?}
+\func sort-isCorrect {A : \Type} (lessOrEq : A -> A -> Bool) (p : isLinOrder lessOrEq) (xs : List A)
+       : \Sigma (isSorted lessOrEq (sort lessOrEq xs)) (isPerm xs (sort lessOrEq xs)) => {?}
+
+\func reverse {A : \Type} (xs : List A) : List A => rev nil xs
+  \where
+    \func rev {A : \Type} (acc xs : List A) : List A \elim xs
+      | nil => acc
+      | cons x xs => rev (cons x acc) xs
+
+-- reverse (cons x xs) => rev nil (cons x xs) => rev (cons x nil) xs
+-- reverse (reverse (cons x xs)) => reverse (rev (cons x nil) xs) => rev nil (rev (cons x nil) xs)
+
+-------------------------------------------------
+-- Examples of proofs: +-assoc and reverse-isInvolution
+-------------------------------------------------
+
+\func reverse-isInvolutive {A : \Type} (xs : List A) : reverse (reverse xs) = xs => rev-isInv nil xs
+  \where
+    \func rev-isInv {A : \Type} (acc xs : List A) : reverse (reverse.rev acc xs) = reverse.rev xs acc \elim xs
+      | nil => idp
+      | cons x xs => rev-isInv (cons x acc) xs
+
+\func \infixl 6 + (x y : Nat) : Nat \elim y
+  | 0 => x
+  | suc y => suc (x + y)
+
+-- congruence, we'll give a definition later
+\func pmap {A B : \Type} (f : A -> B) {a a' : A} (p : a = a') : f a = f a'
+  => {?}
+
+\func +-assoc (x y z : Nat) : (x + y) + z = x + (y + z) \elim z
+  | 0 => idp
+  | suc z => pmap suc (+-assoc x y z)
+-- we can apply pmap because of the reductions:
+-- (x + y) + suc z => suc ((x + y) + z)
+-- x + (y + suc z) => x + suc (y + z) => suc (x + (y + z))
+
+-------------------------------------------------
+-- Vectors of fixed length
+-------------------------------------------------
+
+\func vec (A : \Type) (n : Nat) : \Type \elim n
+  | 0 => \Sigma
+  | suc n => \Sigma A (vec A n)
+
+\func head {A : \Type} (n : Nat) (xs : vec A (suc n)) => xs.1
+
+\func tail {A : \Type} (n : Nat) (xs : vec A (suc n)) => xs.2
+
+\data Vec (A : \Type) (n : Nat) \elim n
+  | 0 => fnil
+  | suc n => fcons A (Vec A n)
+
+\func Head {A : \Type} {n : Nat} (xs : Vec A (suc n)) : A \elim xs
+  | fcons x _ => x
+
+\func Tail {A : \Type} {n : Nat} (xs : Vec A (suc n)) : Vec A n \elim xs
+  | fcons _ xs => xs
+
+\data Maybe (A : \Type) | nothing | just A
+
+\func first {A : \Type} {n : Nat} (xs : Vec A n) : Maybe A \elim n, xs
+  | 0, fnil => nothing
+  | suc n, fcons x xs => just x
+
+\func append {A : \Type} {n m : Nat} (xs : Vec A n) (ys : Vec A m) : Vec A (m + n) \elim n, xs
+  | 0, fnil => ys
+  | suc _ , fcons x xs => fcons x (append xs ys)
+
+\func length {A : \Type} {n : Nat} (xs : Vec A n) => n
+
+-------------------------------------------------
+-- Finite sets, lookup
+-------------------------------------------------
+
+\func \infix 4 < (x y : Nat) : Bool
+  | 0, 0 => false
+  | 0, suc y => true
+  | suc x, 0 => false
+  | suc x, suc y => x < y
+
+\func fin (n : Nat) => \Sigma (x : Nat) (T (x < n))
+
+\func Fin' (n : Nat) : \Set0
+  | 0 => Empty
+  | suc n => Maybe (Fin' n)
+
+\data Fin (n : Nat) \with
+  | suc n => { fzero | fsuc (Fin n) }
+
+-- Fin 0 -- empty type
+\func absurd {A : \Type} (x : Fin 0) : A
+
+\func fin0 : Fin 3 => fzero
+\func fin1 : Fin 3 => fsuc fzero
+\func fin2 : Fin 3 => fsuc (fsuc fzero)
+-- The following does not typecheck
+-- \func fin3 : Fin 3 => fsuc (fsuc (fsuc fzero))
+
+\data \fixr 2 Either (A B : \Type)
+  | inl A
+  | inr B
+
+\func atMost3 (x : Fin 3) : Either (x = fin0) (Either (x = fin1) (x = fin2)) \elim x
+  | fzero => inl idp
+  | fsuc fzero => inr (inl idp)
+  | fsuc (fsuc fzero) => inr (inr idp)
+  | fsuc (fsuc (fsuc ()))
+
+\func toNat {n : Nat} (x : Fin n) : Nat
+  | {suc _}, fzero => 0
+  | {suc _}, fsuc x => suc (toNat x)
+
+\func lookup {A : \Type} {n : Nat} (xs : Vec A n) (i : Fin n) : A \elim n, xs, i
+  | suc _, fcons x _, fzero => x
+  | suc _, fcons _ xs, fsuc i => lookup xs i
