@@ -1,0 +1,28 @@
+-- This file indicates the reading order of the other Arend modules
+
+-- Basic functional programming
+\import Basics ()
+
+-- Basic theorem proving
+\import Proofs ()
+
+-- Indexed data families
+\import Indexed ()
+
+-- The path type
+\import Equality ()
+
+-- Proofs of paths
+\import EqualityProofs ()
+
+-- Classes and records
+\import Records ()
+
+-- Case expressions
+\import Case ()
+
+-- The universe type
+\import Universes ()
+
+-- The insertion sort implementation
+\import sort ()
