@@ -1,0 +1,82 @@
+\data Bool | false | true
+
+\data Empty
+
+\data List (A : \Type) | nil | cons A (List A)
+
+\func T (b : Bool) : \Type
+  | true => \Sigma
+  | false => Empty
+
+\func isProp (A : \Type) => \Pi (x y : A) -> x = y
+
+\func isSet (A : \Type) => \Pi (a a' : A) -> isProp (a = a')
+
+\truncated \data \fixr 2 Or (A B : \Type) : \Prop
+  | inl A
+  | inr B
+
+\data \fixr 2 Either (A B : \Type)
+  | inl A
+  | inr B
+
+\truncated \data Trunc (A : \Type) : \Prop
+  | trunc A
+
+\func hasLevel (A : \Type) (suc-l : Nat) : \Type \elim suc-l
+  | 0 => isProp A
+  | suc suc-l => \Pi (x y : A) -> (x = y) `hasLevel` suc-l
+
+-- 1. The type 'Dec A' below is by default placed in '\Set0'. Place it in '\Prop' be means of '\use \level'.
+
+\data Dec (A : \Prop)
+  | yes A
+  | no (A -> Empty)
+
+-- \func testDec : \Prop -> \Prop => Dec
+
+-- 2. Prove that if 'A : \Prop', then 'Trunc A' is equivalent to 'A'.
+
+\func \infix 1 <-> (A B : \Type) => \Sigma (A -> B) (B -> A)
+
+\func trunc-prop {A : \Prop} : Trunc A <-> A => {?}
+
+-- 3. Prove the following de Morgan's law:
+
+\func deMorgan (A B C : \Prop) : (\Sigma A (B `Or` C)) <-> ((\Sigma A B) `Or` (\Sigma A C)) => {?}
+
+-- 4. Define eliminator for 'Or' via 'Or-rec' not using pattern matching on 'Or'.
+
+\func Or-elim {A B : \Prop} (C : Or A B -> \Prop)
+              (f : \Pi (x : A) -> C (inl x)) (g : \Pi (y : B) -> C (inr y))
+              (p : A `Or` B) : C p => {?}
+
+-- 5. A type 'С' is called cogenerator if for every sets 'A' and 'B' and all functions 'f,g : A -> B'
+--    whenever h `o` f = h `o` g holds for all 'h : B -> C', then 'f = g'.
+--    Prove that '\Prop' is cogenerator.
+
+\func \fixr 9 o {A B C : \Type} (g : B -> C) (f : A -> B) => \lam a => g (f a)
+
+\func isCogenerator (C : \Type) => \Pi {A B : \Set} (f g : A -> B) (p : \Pi (h : B -> C) -> h `o` f = h `o` g) -> f = g
+
+\func PropIsCogenerator : isCogenerator \Prop => {?}
+
+-- 6. Prove that '\Prop' is a set.
+
+\func prop-isSet : isSet \Prop => {?}
+
+-- 7. Prove that (Bool = Bool) = Bool.
+
+\func BoolAut : (Bool = Bool) = Bool => {?}
+
+-- 8. Prove that (n+m)-element set is a disjoint union of n- and m-element sets.
+
+-- 9. We say that a type 'X' is injective if for any function 'f : A -> X' and any injection 'i : A -> B'
+--    there exists a function 'l : B -> X' such that l `o` i = f.
+--    Prove that '\Prop' is injective.
+
+\func isInj {A B : \Type} (f : A -> B) => \Pi (x y : A) -> f x = f y -> x = y
+
+\func isInjective (X : \Type) => \Pi {A B : \Type} (f : A -> X) (i : A -> B) (p : isInj i) -> \Sigma (l : B -> X) (l `o` i = f)
+
+\func Prop-isInjective : isInjective \Prop => {?}

@@ -1,0 +1,108 @@
+\func transport {A : \Type} (B : A -> \Type) {a a' : A} (p : a = a') (b : B a)
+  => coe (\lam i => B (p @ i)) b right
+
+\func sym {A : \Type} {a a' : A} (p : a = a') : a' = a
+  => transport (\lam x => x = a) p idp
+
+\func pmap {A B : \Type} (f : A -> B) {a a' : A} (p : a = a') : f a = f a'
+  => transport (\lam x => f a = f x) p idp
+
+\func \infixr 5 *> {A : \Type} {a a' a'' : A} (p : a = a') (q : a' = a'') : a = a''
+  => transport (\lam x => a = x) q p
+
+\func sigmaEq {A : \Type} (B : A -> \Type) (t1 t2 : \Sigma (x : A) (B x))
+              (p : t1.1 = t2.1) (q : transport B p t1.2 = t2.2)
+  : t1 = t2 \elim t1, t2, p, q
+  | (x,y), (x',y'), idp, idp => idp
+
+-------------------------------------------------
+-- Surjections, injections, bijections
+-------------------------------------------------
+
+\func isProp (A : \Type) => \Pi (x y : A) -> x = y
+
+\func isInj {A B : \Set} (f : A -> B) => \Pi (x y : A) -> f x = f y -> x = y
+
+\truncated \data Trunc (A : \Type) : \Prop
+  | in A
+  \where {
+    \func map {A B : \Type} (f : A -> B) (x : Trunc A) : Trunc B \elim x
+      | in a => in (f a)
+
+    \lemma extract {A : \Type} (x : Trunc A) (p : isProp A) : \level A p \elim x
+      | in a => a
+  }
+
+-- Note that \Sigma (a : A) (f a = b) is not
+-- necessarily a proposition and should be truncated.
+\func isSur {A B : \Set} (f : A -> B) : \Prop =>
+  \Pi (b : B) -> Trunc (\Sigma (a : A) (f a = b))
+-- \Pi (b : B) ->        \Sigma (a : A) (f a = b)
+
+\func isBij {A B : \Set} (f : A -> B) => \Sigma (g : B -> A) (\Pi (x : A) -> g (f x) = x) (\Pi (y : B) -> f (g y) = y)
+
+\func isBij->isInj {A B : \Set} (f : A -> B) (p : isBij f) : isInj f => \lam x y q => sym (p.2 x) *> pmap p.1 q *> p.2 y
+
+\func isBij->isSur {A B : \Set} (f : A -> B) (p : isBij f) : isSur f => \lam b => in (p.1 b, p.3 b)
+
+\func sigmaEq' {A : \Type} (B : A -> \Prop) (t1 t2 : \Sigma (x : A) (B x)) (p : t1.1 = t2.1)
+  => sigmaEq B t1 t2 p (Path.inProp _ _)
+
+\func isInj+isSur->isBij {A B : \Set} (f : A -> B) (ip : isInj f) (sp : isSur f) : isBij f
+  => \let t (b : B) => Trunc.extract (sp b) (\lam t1 t2 => sigmaEq' (\lam a => f a = b) t1 t2 (ip t1.1 t2.1 (t1.2 *> sym t2.2)))
+     \in (\lam b => (t b).1, \lam a => ip _ _ (t (f a)).2, \lam b => (t b).2)
+
+-------------------------------------------------
+-- A definition of Int, datatypes with condition
+-------------------------------------------------
+
+\data Int
+  | pos Nat
+  | neg (n : Nat) \elim n {
+    | 0 => pos 0
+  }
+
+{-
+-- This does not typecheck!
+\func intEx (z : Int) : Nat
+  | pos n => 3
+  | neg n => 7
+ -}
+
+\func intEx' (z : Int) : Nat
+  | pos n => 3
+  | neg (suc n) => 7
+
+\func negative (x : Int) : Int
+  | pos n => neg n
+  | neg n => pos n
+
+\func abs (x : Int) : Nat
+  | pos n => n
+  | neg n => n
+
+-------------------------------------------------
+-- Quotient sets
+-------------------------------------------------
+
+\truncated \data Quotient (A : \Type) (R : A -> A -> \Type) : \Set
+  | inR A
+  | eq (a a' : A) (r : R a a') (i : I) \elim i {
+    | left => inR a
+    | right => inR a'
+  }
+
+\func quotientEq {A : \Type} {R : A -> A -> \Type} (a a' : A) (r : R a a')
+  : inR a = {Quotient A R} inR a'
+  => path (eq a a' r)
+
+\func inR-sur {A : \Set} {R : A -> A -> \Prop} : isSur (inR {A} {R}) =>
+  \lam [a] => \case \elim [a] \with {
+    | inR a => in (a, idp)
+  }
+
+\func quotientEx {A : \Type} {R : A -> A -> \Type} {B : \Set}
+                 (f : A -> B) (p : \Pi (a a' : A) -> R a a' -> f a = f a')
+                 (x : Quotient A R) : B \elim x
+  | inR a => f a
+  | eq a a' r i => p a a' r @ i

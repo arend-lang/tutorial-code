@@ -1,0 +1,139 @@
+\data Bool | false | true
+
+\data Empty
+
+\data List (A : \Type) | nil | cons A (List A)
+
+\func T (b : Bool) : \Type
+  | true => \Sigma
+  | false => Empty
+
+\func isInj {A B : \Type} (f : A -> B) =>
+  \Pi (x y : A) -> f x = f y -> x = y
+
+\func isProp (A : \Type) => \Pi (x y : A) -> x = y
+
+\func isSet (A : \Type) => \Pi (a a' : A) -> isProp (a = a')
+
+\data \fixr 2 Either (A B : \Type)
+  | inl A
+  | inr B
+
+\data Decide (A : \Type)
+  | yes A
+  | no (A -> Empty)
+
+\func hasLevel (A : \Type) (suc-l : Nat) : \Type \elim suc-l
+  | 0 => isProp A
+  | suc suc-l => \Pi (x y : A) -> (x = y) `hasLevel` suc-l
+
+-- 1. Let f : A -> B and g : B -> C be some functions.
+--    Prove that if 'f' and 'g' are injective, then g `o` f is also injective.
+--    Prove that if g `o` f is injective, then 'f' is also injective.
+
+-- Composition of functions
+\func \fixr 9 o {A B C : \Type} (g : B -> C) (f : A -> B) => \lam a => g (f a)
+
+\func o-inj {A B C : \Type} (f : A -> B) (g : B -> C) (p : isInj f) (q : isInj g) : isInj (g `o` f) => {?}
+
+\func o-inj' {A B C : \Type} (f : A -> B) (g : B -> C) (p : isInj (g `o` f)) : isInj f => {?}
+
+-- 2. Define the predicate "divisible by 3 or by 5" in such a way that it is a proposition.
+--    Prove that 'MultipleOf3Or5' embeds in ℕ.
+
+\func isMultipleOf3Or5 (n : Nat) : \Type => {?}
+
+\func isMultipleOf3Or5-isProp (n : Nat) : isProp (isMultipleOf3Or5 n) => {?}
+
+\func MultipleOf3Or5 => \Sigma (n : Nat) (isMultipleOf3Or5 n)
+
+\func Mul-inc (m : MultipleOf3Or5) => m.1
+
+\func Mul-inc-isInj : isInj Mul-inc => {?}
+
+-- 3. We say that a type 'A' is trivial if there exists an element in 'A' such that it is equal to
+--    any other element in 'A'.
+--    Prove that 'A' is trivial iff 'A' is proposition and 'A' is inhabited.
+
+\func isTriv (A : \Type) => \Sigma (a : A) (\Pi (a' : A) -> a = a')
+
+\func \infix 1 <-> (A B : \Type) => \Sigma (A -> B) (B -> A)
+
+\func isTriv-lem (A : \Type) : isTriv A <-> (\Sigma (isProp A) A) => {?}
+
+-- 4. Prove that 'Either' is not a proposition in general.
+
+\func Either-isProp (p : \Pi {A B : \Type} (pA : isProp A) (pB : isProp B) -> isProp (Either A B)) : Empty => {?}
+
+-- 5. Prove that '\Sigma' preserves propositions.
+
+\func Sigma-isProp {A : \Type} (pA : isProp A) (B : A -> \Type)
+                   (pB : \Pi (x : A) -> isProp (B x))
+  : isProp (\Sigma (x : A) (B x))
+  => {?}
+
+-- 6. Prove that <= and <=' are predicates.
+
+\data <= (n m : Nat) : \Set0 \with
+  | 0, m => z<=n
+  | suc n, suc m => s<=s (<= n m)
+
+\data <=' (n m : Nat) : \Set0 \elim m
+  | suc m => <=-step (<=' n m)
+  | m => <=-refl (n = m)
+
+\func <=-isProp {n m : Nat} : isProp (<= n m) => {?}
+
+-- In the proof of <='-isProp it is allowed to use the fact that Nat is set
+-- without a proof. We will return to the proof of this fact later.
+\func Nat-isSet : isSet Nat => {?}
+
+\func <='-isProp {n m : Nat} : isProp (<=' n m) => {?}
+
+-- 7. Prove that 'ReflClosure LessOrEq' is not a predicate, but 'ReflClosure (\lam x y => T (x < y))' is a predicate.
+
+\func \infix 4 < (n m : Nat) : Bool
+  | _, 0 => false
+  | 0, suc _ => true
+  | suc n, suc m => n < m
+
+\data ReflClosure (R : Nat -> Nat -> \Type) (x y : Nat)
+  | refl (x = y)
+  | inc (R x y)
+
+\func ReflClosure_<-isProp (n m : Nat) : isProp (ReflClosure (\lam x y => T (x < y)) n m) => {?}
+
+\func ReflClosure_<=-isNotProp (p : \Pi (n m : Nat) -> isProp (ReflClosure <= n m)) : Empty => {?}
+
+-- 8. Prove that if 'A' embeds in 'B' and 'B' is a proposition, then 'A' is proposition.
+
+\func sub-isProp {A B : \Type} (f : A -> B) (p : isInj f) (q : isProp B) : isProp A => {?}
+
+-- 9. Prove that a type with decidable equality is a set. Note that this implies 'isSet Nat' since
+-- we have already proved that 'Nat' has decidable equality.
+
+\func Dec-isSet {A : \Type} (dec : \Pi (x y : A) -> Decide (x = y)) : isSet A
+  => {?}
+
+-- 10. Prove that if 'A' and 'B' are sets, then A `Or` B is also a set.
+
+\data \fixr 2 Or (A B : \Type)
+  | inl A
+  | inr B
+
+\func or-isSet {A B : \Type} (p : isSet A) (q : isSet B) : isSet (Or A B) => {?}
+
+-- 11. Prove that if 'B x' is a set, then '\Pi (x : A) -> B x' is a set.
+
+\func pi-isSet {A : \Type} (B : A -> \Type) (p : \Pi (x : A) -> isSet (B x)) : isSet (\Pi (x : A) -> B x) => {?}
+
+-- 12. Prove that if 'A' is a set, then 'List A' is a set.
+
+\func List-isSet {A : \Type} (pA : isSet A) : isSet (List A)
+  => {?}
+
+-- 13. Prove that n-types are closed under \Pi-types.
+--     Hint: Proof by induction. For the induction step 'suc n' one should prove that if 'f,g : \Pi (x : A) -> B x',
+--           then 'f = g' is equivalent to '\Pi (x : A) -> f x = g x'.
+
+\func levelPi {A : \Type} (B : A -> \Type) (n : Nat) (p : \Pi (x : A) -> B x `hasLevel` n) : (\Pi (x : A) -> B x) `hasLevel` n => {?}

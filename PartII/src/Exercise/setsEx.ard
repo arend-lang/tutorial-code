@@ -1,0 +1,77 @@
+\func isInj {A B : \Type} (f : A -> B) => \Pi (x y : A) -> f x = f y -> x = y
+
+\truncated \data Trunc (A : \Type) : \Prop
+  | trunc A
+
+\func isSur {A B : \Type} (f : A -> B) : \Prop =>
+  \Pi (b : B) -> Trunc (\Sigma (a : A) (f a = b))
+
+\data Empty
+
+-- 1. Prove that the predecessor function 'pred' on 'Nat' is surjective.
+
+\func pred (n : Nat) : Nat
+  | 0 => 0
+  | suc n => n
+
+\func pred-is-sur : isSur pred => {?}
+
+-- 2. Prove that 'suc' is not surjective.
+
+\func suc-is-not-sur (p : isSur suc) : Empty => {?}
+
+-- 3. Let 'f : A -> B' and 'g : B -> C' be some functions.
+--    Prove that if 'f' and 'g' are surjective, then g `o` f is also surjective.
+--    Prove that if g `o` f is surjective, then 'g' is also surjective.
+
+\func \fixr 9 o {A B C : \Type} (g : B -> C) (f : A -> B) => \lam a => g (f a)
+
+\func o-sur {A B C : \Type} (f : A -> B) (g : B -> C) (p : isSur f) (q : isSur g) : isSur (g `o` f) => {?}
+
+\func o-sur' {A B C : \Type} (f : A -> B) (g : B -> C) (p : isSur (g `o` f)) : isSur g => {?}
+
+-- 4. Prove the Cantor's theorem. It says that for any set 'A' the cardinality of the set of all
+-- subsets of 'A' is strictly greater than the cardinality of 'A'.
+
+-- The set of subsets can be defined as follows:
+\func Subs (A : \Set) => A -> \Prop
+
+-- Cantor's theorem consists of two parts:
+-- "there exists an injection from 'A' to 'Subs A'" and "there is no surjection from 'A' to 'Subs A'".
+\func cantor1 (A : \Set) : \Sigma (f : A -> Subs A) (isInj f)
+  => {?}
+
+\func cantor2 (A : \Set) (f : A -> Subs A) (p : isSur f) : Empty
+  => {?}
+
+-- 5. Define the function 'negPred : Int -> Int' such that 'negPred x = x' if 'x > 0' and 'negPred x = x - 1' if 'x <= 0'.
+
+\func negPred (x : Int) : Int => {?}
+
+-- 6. Define addition and multiplication for 'Int'.
+
+\func \infixl 6 + (x y : Int) : Int => {?}
+
+\func \infixl 7 * (x y : Int) : Int => {?}
+
+-- 7. Define the datatype 'BinNat' for the binary natural numbers.
+--    It should have three constructors: for 0, for even numbers 2*n and for odd numbers 2*n+1.
+--    This type contains several different representations of zero.
+--    Use datatypes with conditions to identify different representations of zero.
+
+\data BinNat
+
+-- 8. Define mutually inverse functions 'Nat -> BinNat' and 'BinNat -> Nat' and prove that they are mutually inverse.
+
+\func NatToBinNat (n : Nat) : BinNat => {?}
+
+\func BinNatToNat (b : BinNat) : Nat => {?}
+
+\func nbn (n : Nat) : BinNatToNat (NatToBinNat n) = n => {?}
+
+\func bnb (b : BinNat) : NatToBinNat (BinNatToNat b) = b => {?}
+
+-- 9. Define the set of finite subsets of a set 'A', that is of finite lists of elements of 'A' defined up to permutations
+-- and repetitions of elements.
+
+\data Set (A : \Set) : \Set

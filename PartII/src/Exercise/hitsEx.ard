@@ -1,0 +1,61 @@
+\import hits
+
+-- 1. Prove that 'CircleToSphere1' and 'Sphere1ToCircle' are mutually inverse.
+
+\func CircleToSphere1 (x : Circle) : Sphere 1
+  | base => S
+  | loop i => (path (merid N) *> inv (path (merid S))) @ i
+
+\func Sphere1ToCircle (x : Sphere 1) : Circle
+  | S => base
+  | N => base
+  | merid S i => loop i
+  | merid N i => base
+  | merid (merid () _) _
+
+\func Circ-S1-Circ (x : Circle) : x = Sphere1ToCircle (CircleToSphere1 x)
+  => {?}
+
+\func S1-Circ-S1 (x : Sphere 1) : x = CircleToSphere1 (Sphere1ToCircle x)
+  => {?}
+
+-- 2. Prove that Torus is equivalent to the direct product \Sigma Circle Circle of circles.
+
+\func TorusToS1xS1 (x : Torus) : \Sigma Circle Circle
+  => {?}
+
+\func S1xS1ToTorus (x : \Sigma Circle Circle) : Torus
+  => {?}
+
+\func Torus-S1xS1-Torus (x : Torus) : x = S1xS1ToTorus (TorusToS1xS1 x)
+  => {?}
+
+\func S1xS1-Torus-S1xS1 (x : \Sigma Circle Circle) : x = TorusToS1xS1 (S1xS1ToTorus x)
+  => {?}
+
+-- 3. Let X : \1-Type be connected. Prove that the groups pi1-1 X x and pi1-1 X y are isomorphic for all x y : X.
+
+\truncated \data TruncP (A : \Type) : \Prop
+  | trunc A
+
+\func Equiv (A B : \Type) => \Sigma (f : A -> B)
+                                    (g : B -> A)
+                                    (\Pi (x : A) -> g (f x) = x)
+                                    (\Pi (y : B) -> f (g y) = y)
+
+\func equality=>equivalence {A B : \Type} (p : A = B) : Equiv A B =>
+  transport (Equiv A) p (\lam x => x, \lam x => x, \lam x => idp, \lam x => idp)
+
+\func isConnected (X : \Type) => \Pi (x y : X) -> TruncP (x = y)
+
+\func pi1-1 (X : \1-Type) (x : X) => x = x
+
+\func pi1-1-equiv (X : \1-Type) (p : isConnected X) (x y : X) : Equiv (x = x) (y = y)
+  => {?}
+
+\func pi1-1-homo (X : \1-Type) (p : isConnected X) (x y : X) (q r : x = x) : (pi1-1-func X p x y) (q *> r) = (pi1-1-func X p x y) q *> (pi1-1-func X p x y) r
+  => {?}
+  \where {
+    \func pi1-1-func (X : \1-Type) (p : isConnected X) (x y : X) : (x = x) -> (y = y)
+      => (pi1-1-equiv X p x y).1
+  }

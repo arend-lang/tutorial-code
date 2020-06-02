@@ -1,0 +1,203 @@
+\data Bool | false | true
+
+\data Empty
+
+\data Unit | unit
+
+\func T (b : Bool) : \Type
+  | true => \Sigma
+  | false => Empty
+
+\func transport {A : \Type} (B : A -> \Type) {a a' : A} (p : a = a') (b : B a)
+  => coe (\lam i => B (p @ i)) b right
+
+\func sym {A : \Type} {a a' : A} (p : a = a') : a' = a
+  => transport (\lam x => x = a) p idp
+
+\func pmap {A B : \Type} (f : A -> B) {a a' : A} (p : a = a') : f a = f a'
+  => transport (\lam x => f a = f x) p idp
+
+\func \infixr 5 *> {A : \Type} {a a' a'' : A} (p : a = a') (q : a' = a'') : a = a''
+  => transport (\lam x => a = x) q p
+
+\data \fixr 2 Either (A B : \Type)
+  | inl A
+  | inr B
+
+-------------------------------------------------
+-- Subsets, injective functions
+-------------------------------------------------
+
+\func isEven (n : Nat) : Bool
+  | 0 => true
+  | 1 => false
+  | suc (suc n) => isEven n
+
+\func Even => \Sigma (n : Nat) (T (isEven n))
+
+\func Even-inc (e : Even) => e.1
+
+\func isInj {A B : \Type} (f : A -> B) =>
+  \Pi (x y : A) -> f x = f y -> x = y
+
+\func prodEq {A B : \Type} (t1 t2 : \Sigma A B) (p : t1.1 = t2.1) (q : t1.2 = t2.2)
+  : t1 = t2
+  => path (\lam i => (p @ i, q @ i))
+
+\func sigmaEq {A : \Type} (B : A -> \Type) (t1 t2 : \Sigma (x : A) (B x))
+              (p : t1.1 = t2.1) (q : transport B p t1.2 = t2.2)
+  : t1 = t2 \elim t1, t2, p, q
+  | (x,y), (x',y'), idp, idp => idp
+
+\func T-lem {b : Bool} {x y : T b} : x = y
+  | {true} => idp
+
+\func Even-inc-isInj : isInj Even-inc =>
+  \lam p p' t => sigmaEq (\lam n => T (isEven n)) p p' t T-lem
+
+\func mod3 (n : Nat) : Nat
+  | 0 => 0
+  | 1 => 1
+  | 2 => 2
+  | suc (suc (suc n)) => mod3 n
+
+\func mod5 (n : Nat) : Nat
+  | 0 => 0
+  | 1 => 1
+  | 2 => 2
+  | 3 => 3
+  | 4 => 4
+  | suc (suc (suc (suc (suc n)))) => mod5 n
+
+\func MultipleOf3Or5 => \Sigma (n : Nat) ((mod3 n = 0) `Either` (mod5 n = 0))
+
+\func Mul-inc (m : MultipleOf3Or5) => m.1
+
+-- \func Mul-inc-isInj (p : isInj Mul-inc) : Empty => {?}
+
+-------------------------------------------------
+-- Mere propositions
+-------------------------------------------------
+
+\func isProp (A : \Type) => \Pi (x y : A) -> x = y
+
+\func BoolIsNotProp (p : isProp Bool) : Empty
+  => transport T (p true false) ()
+
+\func Empty-isProp : isProp Empty => \lam x y => \case x \with {}
+
+\func Unit-isProp : isProp (\Sigma) => \lam x y => idp
+
+\func Sigma-isProp {A B : \Type} (pA : isProp A) (pB : isProp B)
+  : isProp (\Sigma A B) => \lam p q => prodEq p q (pA p.1 q.1) (pB p.2 q.2)
+
+-- \func Either-isProp {A B : \Type} (pA : isProp A) (pB : isProp B)
+--   : isProp (Either A B)
+--   => {?}
+
+\func funExt {A : \Type} (B : A -> \Type) (f g : \Pi (x : A) -> B x)
+             (p : \Pi (x : A) -> f x = g x) : f = g =>
+  path (\lam i x => p x @ i)
+
+\func Impl-isProp {A B : \Type} {- (pA : isProp A) -} (pB : isProp B) : isProp (A -> B)
+  => \lam f g =>  funExt (\lam _ => B) f g (\lam x => pB (f x) (g x)) -- path (\lam i x => pB (f x) (g x) @ i)
+
+
+\func forall-isProp {A : \Type} (B : A -> \Type) (pB : \Pi (x : A) -> isProp (B x))
+  : isProp (\Pi (x : A) -> B x)
+  => \lam f g => path (\lam i x => pB x (f x) (g x) @ i)
+
+{-
+\func exists-isProp {A : \Type} (B : A -> \Type)
+                    (pB : \Pi (x : A) -> isProp (B x))
+  : isProp (\Sigma (x : A) (B x))
+  => {?}
+-}
+
+-- \func equality-isProp {A : \Type} (a a' : A) : isProp (a = a') => {?}
+
+\data \infix 4 <=' (n m : Nat) \with
+  | 0, _ => zero<=_
+  | suc n, suc m => suc<=suc (n <=' m)
+
+\data \infix 4 <='' (n m : Nat) \elim m
+  | m => <=-refl (n = m)
+  | 1 => zero<=one (n = 0)
+  | suc m => <=-step (n <='' m)
+
+-------------------------------------------------
+-- Sets
+-------------------------------------------------
+
+\func isSet (A : \Type) => \Pi (a a' : A) -> isProp (a = a')
+
+\func equality-isProp {A : \Type} (p : isSet A) (a a' : A) : isProp (a = a') => p a a'
+
+\func hasLevel (A : \Type) (suc-l : Nat) : \Type \elim suc-l
+  | 0 => isProp A
+  | suc suc-l => \Pi (x y : A) -> (x = y) `hasLevel` suc-l
+
+\func Empty-isSet : isSet Empty => \lam x y _ _ => \case x \with {}
+
+\func retract-isProp {A B : \Type} (pB : isProp B) (f : A -> B) (g : B -> A)
+                     (h : \Pi (x : A) -> g (f x) = x)
+  : isProp A
+  => \lam x y => sym (h x) *> pmap g (pB (f x) (f y)) *> h y
+
+\func Unit'-isProp (x y : Unit) : x = y
+  | unit, unit => idp
+
+\func Unit-isSet : isSet Unit => \lam x y => retract-isProp {x = y} Unit'-isProp
+                                                            (\lam _ => unit) (\lam _ => Unit'-isProp x y)
+                                                            (\lam p => \case \elim x, \elim y, \elim p \with { | unit, _, idp => idp })
+
+\func Sigma'-isProp {A : \Type} (B : A -> \Type)
+                   (pA : isProp A) (pB : \Pi (x : A) -> isProp (B x))
+  : isProp (\Sigma (x : A) (B x)) => \lam p q => sigmaEq B p q (pA _ _) (pB _ _ _)
+
+
+\func retract'-isProp {A B : \Type} (pB : isProp B) (g : B -> A)
+                      (H : \Pi (x : A) -> \Sigma (y : B) (g y = x))
+  : isProp A
+  => \lam x y => sym (H x).2 *> pmap g (pB (H x).1 (H y).1) *> (H y).2
+
+\func Sigma-isSet {A : \Type} (B : A -> \Type)
+                  (pA : isSet A) (pB : \Pi (x : A) -> isSet (B x))
+  : isSet (\Sigma (x : A) (B x))
+  => \lam t t' => retract'-isProp
+      {t = t'}
+      {\Sigma (p : t.1 = t'.1) (transport B p t.2 = t'.2)}
+      (Sigma'-isProp (\lam p => transport B p t.2 = t'.2) (pA _ _) (\lam _ => pB _ _ _))
+      (\lam s => sigmaEq B t t' s.1 s.2)
+      (\lam p => \case \elim t', \elim p \with { | _, idp => ((idp,idp),idp) })
+
+-------------------------------------------------
+-- Groupoid structure on types
+-------------------------------------------------
+
+\func isGpd (A : \Type) => \Pi (x y : A) -> isSet (x = y)
+
+-- 'idp' is left and right identity
+\func idp-right {A : \Type} {x y : A} (p : x = y) : p *> idp = p => idp
+
+\func idp-left {A : \Type} {x y : A} (p : x = y) : idp *> p = p \elim p
+  | idp => idp
+
+-- * is associative
+\func *-assoc {A : \Type} {x y z w : A} (p : x = y) (q : y = z) (r : z = w)
+  : (p *> q) *> r = p *> (q *> r) \elim r
+  | idp => idp
+
+-- 'sym' is inverse
+\func sym-left {A : \Type} {x y : A} (p : x = y) : sym p *> p = idp
+\elim p
+  | idp => idp
+
+\func sym-right {A : \Type} {x y : A} (p : x = y) : p *> sym p = idp
+\elim p
+  | idp => idp
+
+\func cancelLeft {A : \Type} {x y z : A}
+                 (p : x = y) (q r : y = z) (s : p *> q = p *> r) : q = r
+\elim p, r
+  | idp, idp => sym (idp-left q) *> s

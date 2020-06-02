@@ -1,0 +1,69 @@
+\data Empty
+
+\func transport {A : \Type} (B : A -> \Type) {a a' : A} (p : a = a') (b : B a)
+  => coe (\lam i => B (p @ i)) b right
+
+\func inv {A : \Type} {a a' : A} (p : a = a') : a' = a
+  => transport (\lam x => x = a) p idp
+
+\func \infixr 5 *> {A : \Type} {a a' a'' : A} (p : a = a') (q : a' = a'') : a = a''
+  => transport (\lam x => a = x) q p
+
+-------------------------------------------------
+-- Spaces: sphere, torus
+-------------------------------------------------
+
+\data Circle
+  | base
+  | loop I \with {
+    | left => base
+    | right => base
+  }
+
+\data Susp (A : \Type)
+  | S | N
+  | merid A (i : I) \elim i {
+    | left => S
+    | right => N
+  }
+
+\func Sphere (n : Nat) : \Type \lp \oo
+  | 0 => Susp Empty
+  | suc n => Susp (Sphere n)
+
+\func CircleToSphere1 (x : Circle) : Sphere 1
+  | base => S
+  | loop i => (path (merid N) *> inv (path (merid S))) @ i
+
+\func Sphere1ToCircle (x : Sphere 1) : Circle
+  | S => base
+  | N => base
+  | merid S i => loop i
+  | merid N i => base
+  | merid (merid () _) _
+
+\data Torus
+  | point
+  | line1  I \with { left => point | right => point }
+  | line2  I \with { left => point | right => point }
+  | face I I \with {
+    | left, i => line2 i
+    | right, i => line2 i
+    | i, left => line1 i
+    | i, right => line1 i
+  }
+
+-------------------------------------------------
+-- Higher induction principles
+-------------------------------------------------
+
+\func circRec {B : \Type} {b : B} (l : b = b) (x : Circle) : B \elim x
+  | base => b
+  | loop i => l @ i
+
+\func concat {A : I -> \Type} {a : A left} {a' a'' : A right} (p : Path A a a') (q : a' = a'') : Path A a a'' \elim q
+  | idp => p
+
+\func circInd (B : Circle -> \Type) (b : B base) (l : transport B (path loop) b = b) (x : Circle) : B x \elim x
+  | base => b
+  | loop i => (concat {\lam i => B (loop i)} (path (\lam i => coe (\lam j => B (loop j)) b i)) l) @ i
