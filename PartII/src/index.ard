@@ -1,0 +1,13 @@
+-- This file indicates the reading order of the other Arend modules
+
+-- Propositions and sets in HoTT
+\import PropsSets ()
+
+-- Universes stratified by homotopy level, truncations and univalence
+\import HomUniverses ()
+
+-- Basic set theory
+\import Sets ()
+
+-- Basic homotopy theory
+\import Spaces ()

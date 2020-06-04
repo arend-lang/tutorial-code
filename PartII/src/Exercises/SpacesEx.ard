@@ -1,4 +1,4 @@
-\import hits
+\import Spaces
 
 -- 1. Prove that 'CircleToSphere1' and 'Sphere1ToCircle' are mutually inverse.
 
