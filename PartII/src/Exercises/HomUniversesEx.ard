@@ -16,10 +16,6 @@
   | inl A
   | inr B
 
-\data \fixr 2 Either (A B : \Type)
-  | inl A
-  | inr B
-
 \truncated \data Trunc (A : \Type) : \Prop
   | trunc A
 

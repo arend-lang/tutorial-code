@@ -9,7 +9,7 @@
 \func idTest2 => id'' Maybe
 \func idTest3 => id'' Functor
 \func idTest4 => id'' (Functor Maybe)
-\func idTest5 (f : \Pi {A B : \Type} -> (A -> B) -> Maybe A -> Maybe B) => id'' (Functor Maybe f)
+\func idTest5 (f : \Pi {A B : \Set} -> (A -> B) -> Maybe A -> Maybe B) => id'' (Functor Maybe f)
 
 -- 2. Define 'div' via 'Nat-ind'.
 

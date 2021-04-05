@@ -115,13 +115,9 @@
 \func Dec-isSet {A : \Type} (dec : \Pi (x y : A) -> Decide (x = y)) : isSet A
   => {?}
 
--- 10. Prove that if 'A' and 'B' are sets, then A `Or` B is also a set.
+-- 10. Prove that if 'A' and 'B' are sets, then A `Either` B is also a set.
 
-\data \fixr 2 Or (A B : \Type)
-  | inl A
-  | inr B
-
-\func or-isSet {A B : \Type} (p : isSet A) (q : isSet B) : isSet (Or A B) => {?}
+\func or-isSet {A B : \Type} (p : isSet A) (q : isSet B) : isSet (Either A B) => {?}
 
 -- 11. Prove that if 'B x' is a set, then '\Pi (x : A) -> B x' is a set.
 

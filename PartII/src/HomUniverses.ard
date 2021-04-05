@@ -5,8 +5,8 @@
 \data Unit | unit
 
 \data \fixr 2 Either (A B : \Type)
-  | inl A
-  | inr B
+  | inl' A
+  | inr' B
 
 \func transport {A : \Type} (B : A -> \Type) {a a' : A} (p : a = a') (b : B a)
   => coe (\lam i => B (p @ i)) b right
