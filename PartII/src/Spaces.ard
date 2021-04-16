@@ -21,26 +21,27 @@
   }
 
 \data Susp (A : \Type)
-  | S | N
-  | merid A (i : I) \elim i {
-    | left => S
-    | right => N
-  }
+   | south
+   | north
+   | merid A (i : I) \elim i {
+      	| left => north
+        | right => south
+   }
 
 \func Sphere (n : Nat) : \Type \lp \oo
   | 0 => Susp Empty
   | suc n => Susp (Sphere n)
 
 \func CircleToSphere1 (x : Circle) : Sphere 1
-  | base => S
-  | loop i => (path (merid N) *> inv (path (merid S))) @ i
+    | base => north
+    | loop i => (path (merid north) *> inv (path (merid south))) @ i 
 
 \func Sphere1ToCircle (x : Sphere 1) : Circle
-  | S => base
-  | N => base
-  | merid S i => loop i
-  | merid N i => base
-  | merid (merid () _) _
+    | south => base
+    | north => base
+    | merid north i => loop i
+    | merid south i => base
+    | merid (merid () _) _
 
 \data Torus
   | point

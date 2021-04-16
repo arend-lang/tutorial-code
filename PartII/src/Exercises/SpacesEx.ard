@@ -2,17 +2,6 @@
 
 -- 1. Prove that 'CircleToSphere1' and 'Sphere1ToCircle' are mutually inverse.
 
-\func CircleToSphere1 (x : Circle) : Sphere 1
-  | base => S
-  | loop i => (path (merid N) *> inv (path (merid S))) @ i
-
-\func Sphere1ToCircle (x : Sphere 1) : Circle
-  | S => base
-  | N => base
-  | merid S i => loop i
-  | merid N i => base
-  | merid (merid () _) _
-
 \func Circ-S1-Circ (x : Circle) : x = Sphere1ToCircle (CircleToSphere1 x)
   => {?}
 
