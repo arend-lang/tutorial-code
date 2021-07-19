@@ -30,7 +30,7 @@
 
 \func isEven-dec : DecPred isEven => {?}
 
--- 6. Prove that if equality of elements of a type 'A' is decidable, then eqiality of elements if 'List A' is also decidable.
+-- 6. Prove that if equality of elements of a type 'A' is decidable, then equality of elements if 'List A' is also decidable.
 
 \instance ListEq {A : \Type} (dec : Eq A) : Eq (List A)
   | decideEq => {?}
