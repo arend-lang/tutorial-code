@@ -34,7 +34,7 @@
    id'' x = x
 -}
 
--- types of parameters cannot be infered as before
+-- types of parameters cannot be inferred as before
 \func foo' => \lam (x _ : Nat) (_ : Int) => x
 -- but types of parameters can be omitted if the result type is specified explicitly
 \func foo'' : Nat -> Nat -> Int -> Nat => \lam x _ _ => x
