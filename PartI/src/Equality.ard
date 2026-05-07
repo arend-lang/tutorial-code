@@ -48,7 +48,7 @@
 \data Empty
 
 \func lem : \Pi (X : \Type) -> Either X (X -> Empty) => {?}
-\func ugly_num : Nat => \case lem Nat \with { | Left => 0 | Right => 1 }
+\func ugly_num : Nat => \case lem Nat \with { | inl _ => 0 | inr _ => 1 }
 
 -------------------------------------------------
 -- Eliminators

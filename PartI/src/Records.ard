@@ -314,9 +314,9 @@
 \class Endo \extends Map {
   | B => A
 
-  \func isIdem => \Pi (x : A) -> f (f x) = f x
+  \func isIdem => \Pi (x : Map.A) -> f (f x) = f x
 
-  \func isInv => \Pi (x : A) -> f (f x) = x
+  \func isInv => \Pi (x : Map.A) -> f (f x) = x
 
   \func isIdem+isInv=>id (p : isIdem) (q : isInv) : f = (\lam x => x) => {?}
 }

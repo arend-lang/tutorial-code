@@ -1,7 +1,7 @@
 \import Proofs
 \open Nat(+,*)
 
--- 1. Prove that (P -> Q -> R) -> (P -> Q) -> P -> S
+-- 1. Prove that (P -> Q -> R) -> (P -> Q) -> P -> R
 
 \func t1 {P Q R : \Type} (r : P -> Q -> R) (q : P -> Q) (p : P) : R => {?}
 
