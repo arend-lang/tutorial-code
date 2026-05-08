@@ -31,3 +31,9 @@
 --    * 'filter p xs' is a sublist of 'xs'
 --    * All elements of 'filter p xs' satisfy the predicate 'p'
 --    * Any sublist of 'xs' with this property is a sublist of 'filter p xs'
+--
+-- Note: the third (maximality) direction is significantly more verbose than
+-- the first two because it requires repeated 'p x \as b, idp : p x = b' case
+-- splits along every clause that touches 'filter p (cons x xs)'. It is
+-- recommended to focus on the first two properties; tackle maximality only
+-- if you want to practise that '\case ... \as ... \return ... \with' pattern.

@@ -57,9 +57,8 @@
 \data Ordering | LT | EQ | GT
 
 \func \infix 4 < (x y : Nat) : Bool
-  | 0, 0 => false
+  | _, 0 => false
   | 0, suc y => true
-  | suc x, 0 => false
   | suc x, suc y => x < y
 
 \func compare (x y : Nat) : Ordering =>
@@ -183,6 +182,32 @@
   | even k _ => k
   | odd k _ => k
 }
+
+-- Auxiliary arithmetic lemmas used by the ModView exercise below.
+-- They are grouped here because '*' eliminates on its second argument,
+-- so '(suc q) * m' does not reduce when 'm' is a free variable, and the
+-- proof of correctness for 'mod-view' needs to rewrite via '*-suc'.
+
+\func \infixr 5 *> {A : \Type} {a a' a'' : A} (p : a = a') (q : a' = a'') : a = a''
+  => transport (\lam x => a = x) q p
+
+\func +-comm (n m : Nat) : n + m = m + n
+  | 0, 0 => idp
+  | suc n, 0 => pmap suc (+-comm n 0)
+  | 0, suc m => pmap suc (+-comm 0 m)
+  | suc n, suc m => pmap suc (+-comm (suc n) m *> pmap suc (inv (+-comm n m)) *> +-comm n (suc m))
+
+\func +-assoc (x y z : Nat) : (x + y) + z = x + (y + z) \elim z
+  | 0 => idp
+  | suc z => pmap suc (+-assoc x y z)
+
+\func *-suc (q m : Nat) : suc q * m = q * m + m \elim m
+  | 0 => idp
+  | suc m => pmap suc (
+      pmap (\lam u => u + q) (*-suc q m) *>
+      +-assoc (q * m) m q *>
+      pmap (\lam u => q * m + u) (+-comm m q) *>
+      inv (+-assoc (q * m) q m))
 
 -------------------------------------------------
 -- Decidable predicates

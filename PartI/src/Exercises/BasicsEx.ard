@@ -7,7 +7,8 @@
 \func f5 => f1
 \func f6 => f4
 
-\func test => f1 f2 f3 f4 f5 f6
+-- After choosing priorities for f1..f6, uncomment the following line:
+-- \func test => f1 f2 f3 f4 f5 f6
 
 -- 2. Define in Arend the function 'if', which takes a boolean value b and two elements of an arbitrary type A
 --    and return the first element when b equals to true and the second one otherwise.

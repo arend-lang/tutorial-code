@@ -37,6 +37,9 @@
 
 -- 7. Prove that if equality of elements of a type 'A' is decidable, then every list of elements of 'A' is either empty,
 -- consists of repetitions of one element or there exist two different elements in 'A'.
+-- Hint: case-split on the recursive call 'lemma xs' first; case-split on
+-- 'dec x a' only inside the 'repeated' branch. The reverse order (case on
+-- 'dec' first) does not lead to a clean inductive structure.
 
 \func repeat {A : \Type} (n : Nat) (a : A) : List A \elim n
   | 0 => nil
