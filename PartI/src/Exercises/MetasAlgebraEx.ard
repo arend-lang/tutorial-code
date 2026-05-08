@@ -1,0 +1,55 @@
+\import Algebra.Meta
+\import Algebra.Group
+\import Algebra.Monoid
+\import Algebra.Pointed
+\import Algebra.Ring
+\import Algebra.Semiring
+\import Logic
+\import Logic.Meta
+\import Meta
+\import Paths
+\import Paths.Meta
+
+-- 1. Prove the following one-liners with 'simplify':
+--    (a) {M : Monoid} (x : M) : x = x * ide
+--    (b) {R : Ring} (x : R) : negative (negative x) = x
+--    (c) {R : Semiring} (x : R) : zro = x * zro
+
+\lemma simp-a {M : Monoid} (x : M) : x = x * ide => {?}
+
+\lemma simp-b {R : Ring} (x : R) : negative (negative x) = x => {?}
+
+\lemma simp-c {R : Semiring} (x : R) : zro = x * zro => {?}
+
+-- 2. Find a goal that 'simplify' cannot solve and explain why. Hint: try a goal that
+--    requires *commutativity*.
+
+-- 3. Prove
+--      {A : \Type} (f : A -> A -> A -> A) (x x' y y' z z' : A)
+--      (p : x = x') (q : y = y') (r : z = z') : f x y z = f x' y' z'
+--    with one 'cong'. Then write the equivalent proof using 'pmap'/'pmap2'/manual
+--    rewriting and compare line counts.
+
+\func cong-3 {A : \Type} (f : A -> A -> A -> A) (x x' y y' z z' : A)
+             (p : x = x') (q : y = y') (r : z = z')
+           : f x y z = f x' y' z' => {?}
+
+-- 4. Prove (\lam (x : Nat) => x Nat.+ 0) = (\lam x => x) using 'ext'.
+
+\func ext-fun-eq : (\lam (x : Nat) => x Nat.+ 0) = (\lam x => x) => {?}
+
+-- 5. Define a 3-field \record R and prove that two values of R are equal whenever
+--    each pair of components is equal, using the copattern form
+--    'ext R { | f_1 => p_1 | ... }'.
+
+\record R3
+  | f1 : Nat
+  | f2 : Nat
+  | f3 : Nat
+
+\func ext-record (a b : R3) (p1 : a.f1 = b.f1) (p2 : a.f2 = b.f2) (p3 : a.f3 = b.f3)
+              : a = b => {?}
+
+-- 6. Prove \Pi (A B : \Prop) -> (A -> B) -> (B -> A) -> A = B using 'ext'.
+
+\func ext-prop : \Pi (A B : \Prop) -> (A -> B) -> (B -> A) -> A = B => {?}

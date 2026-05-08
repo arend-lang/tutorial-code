@@ -1,0 +1,66 @@
+\import Algebra.Meta  -- equation, cong, linarith, simplify
+\import Algebra.Group
+\import Algebra.Monoid
+\import Algebra.Pointed
+\import Algebra.Ring
+\import Algebra.Semiring
+\import Logic
+\import Logic.Meta
+\import Meta
+\import Paths
+\import Paths.Meta    -- ext, simp_coe
+
+-------------------------------------------------
+-- simplify: algebraic normalization
+-------------------------------------------------
+
+\func simp-1 {M : Monoid} (x : M) : x = x * ide
+  => simplify
+
+\func simp-3 {R : Ring} (x : R) : negative (negative x) = x
+  => simplify
+
+\func simp-4 {R : Semiring} (x : R) : zro = x * zro
+  => simplify
+
+-- The 'in'-form of 'simplify' normalizes a hypothesis instead of the goal:
+\func simp-hyp {M : Monoid} (x y : M) (h : x * (ide * y) = ide) : x * y = ide
+  => simplify in h
+
+-------------------------------------------------
+-- equation: chained equality, with implicit step proofs
+-------------------------------------------------
+
+\func eq-test {M : Monoid} (x y z : M) (p : x = y) (q : y = z) : x = z
+  => equation x y z
+
+-------------------------------------------------
+-- cong: congruence closure
+-------------------------------------------------
+
+\func cong-test {A B : \Type} (f : A -> A -> B)
+                (x x' y y' : A) (p : x = x') (q : y = y')
+              : f x y = f x' y'
+  => cong
+
+-------------------------------------------------
+-- ext: extensionality, polymorphic over the equality's type
+-------------------------------------------------
+
+\func ext-fun (f g : Nat -> Nat) (h : \Pi (n : Nat) -> f n = g n) : f = g
+  => ext h
+
+\func ext-sigma (p p' : \Sigma Nat Nat) (h1 : p.1 = p'.1) (h2 : p.2 = p'.2)
+             : p = p'
+  => ext (h1, h2)
+
+\lemma ext-prop (A B : \Prop) (f : A -> B) (g : B -> A) : A = B
+  => ext (f, g)
+
+-------------------------------------------------
+-- simp_coe (advanced)
+-------------------------------------------------
+
+-- When proofs accumulate coe/transport over Pi-, Sigma-, or record-types,
+-- 'simp_coe' pushes them through the structure. See Paths metas / simp_coe
+-- for details.

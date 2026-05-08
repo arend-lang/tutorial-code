@@ -37,3 +37,30 @@
 
 \data State' (S A : \Type)
   | state' (S -> \Sigma S A)
+
+-- 7. Prove the following one-liners using linarith:
+--    (a) \Pi {a b : Nat} -> 0 <= a Nat.+ b
+--    (b) \Pi {a b c : Nat} -> a <= b -> b Nat.+ c <= a -> c = 0
+--    (c) \Pi {a : Nat} -> a < a -> Empty
+
+-- \import Algebra.Meta
+-- \import Algebra.StrictlyOrdered
+-- \import Arith.Nat
+
+-- \lemma linarith-a {a b : Nat} : 0 <= a Nat.+ b => linarith
+
+-- \lemma linarith-b {a b c : Nat} (p : a <= b) (q : b Nat.+ c <= a) : c = 0 => linarith
+
+-- \lemma linarith-c {a : Nat} (p : a < a) : Empty => linarith
+
+-- 8. Prove \Pi {R : LinearlyOrderedSemiring} {a b c : R} -> a <= b + c -> b + 2 * c <= 0 -> 2 * a <= b
+--    using linarith. Note that the same syntax works regardless of which R the caller supplies —
+--    the meta dispatches on the inferred instance.
+
+-- \lemma linarith-generic {R : LinearlyOrderedSemiring} {a b c : R}
+--                         (p : a <= b + c) (q : b + 2 * c <= 0) : 2 * a <= b => {?}
+
+-- 9. Investigate the boundary: try to prove \Pi {a b : Nat} -> a Nat.* b = b Nat.* a
+--    with linarith and explain in a comment why it fails.
+
+-- \lemma linarith-nonlinear {a b : Nat} : a Nat.* b = b Nat.* a => {?}

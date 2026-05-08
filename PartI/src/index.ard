@@ -21,6 +21,12 @@
 -- Case expressions
 \import Case ()
 
+-- Standard metas for equality
+\import MetasEquality ()
+
+-- Algebraic metas
+\import MetasAlgebra ()
+
 -- The universe type
 \import Universes ()
 

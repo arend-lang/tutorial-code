@@ -60,3 +60,15 @@
 \func \infix 4 <-> {A : \Type} (P Q : A -> \Type) => \Pi (x : A) -> \Sigma (P x -> Q x) (Q x -> P x)
 
 \func dbd {A : \Type} (P : \Sigma (P : A -> \Type) (DecPred P)) : (FromBoolToDec (FromDecToBool P)).1 <-> P.1 => {?}
+
+-- 9. Take the 'filter-lem' proof from earlier in this chapter, which uses a verbose
+--    \case p x \as b \return ... \with, and rewrite it using cases (p x arg addPath).
+
+\func filter-lem-cases {A : \Type} (p : A -> Bool) (xs : List A) : length (filter p xs) <= length xs => {?}
+
+-- 10. Define a function f : Nat -> Nat -> Nat by pattern-matching with the same constant value
+--     (say, 0) on every clause. Prove \Pi (n m : Nat) -> f n m = 0 using mcases {f}.
+
+\func const-f (n m : Nat) : Nat => {?}
+
+\func const-f-eq-zero (n m : Nat) : const-f n m = 0 => {?}

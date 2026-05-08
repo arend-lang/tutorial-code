@@ -1,0 +1,42 @@
+\import Paths
+\import Paths.Meta
+\import Meta
+\import Function.Meta
+\import Logic
+
+-- 1. Reprove '+-comm' from "Proofs of Equality" using only 'rewrite', 'rewriteI',
+--    and 'idp' — no 'pmap', no '*>', no equational reasoning. Compare the line count.
+
+\open Nat(+)
+
+\func +-comm (n m : Nat) : n + m = m + n => {?}
+
+-- 2. Predict which of the following typecheck and explain why. Then run them to verify.
+
+-- \func test1 (x y : Nat) (p : x = zero) (q : zero = y) : x = y => rewrite p q
+-- \func test2 (x y : Nat) (p : x = zero) (q : zero = y) : x = y => rewrite p in q
+-- \func test3 (x y : Nat) (p : zero = x) (q : zero = y) : x = y => rewrite p q
+-- \func test4 (x y : Nat) (p : zero = x) (q : zero = y) : x = y => rewrite p in q
+
+-- 3. State a lemma where 'rewrite' would replace too many occurrences. Use occurrence
+--    selection 'rewrite {n} p t' to make the proof go through.
+
+-- 4. Take the proof of 'reverse-isInvolutive' from "Indexed Data Types" (which uses
+--    'rev-isInv' and '*>'-chains in similar style) and rewrite its body as a single
+--    'run'-block.
+
+-- 5. Given (x : Nat) (p : x = 0) (q : x = 1), prove Empty. Write three solutions:
+--    (a) using 'at',
+--    (b) introducing a fresh binding via '\have',
+--    (c) chaining '*>'-style with 'inv'.
+
+\func ex5-a (x : Nat) (p : x = 0) (q : x = 1) : Empty => {?}
+
+\func ex5-b (x : Nat) (p : x = 0) (q : x = 1) : Empty => {?}
+
+\func ex5-c (x : Nat) (p : x = 0) (q : x = 1) : Empty => {?}
+
+-- 6. Use 'pmap suc at p' to convert a hypothesis p : x = 0 into p : suc x = 1,
+--    then use it to discharge a goal suc x = 1.
+
+\func ex6 (x : Nat) (p : x = 0) : suc x = 1 => {?}

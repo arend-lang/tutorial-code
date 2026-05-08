@@ -1,0 +1,103 @@
+\import Paths        -- inv, *>, transport, transportInv, idp, pmap
+\import Paths.Meta   -- rewrite, rewriteI, ext, simp_coe, simplify
+\import Meta         -- run, in, at, cases, mcases, unfold, ...
+\import Function.Meta -- $, #, repeat
+\import Logic        -- Empty
+
+-------------------------------------------------
+-- rewrite
+-------------------------------------------------
+
+-- These two definitions are equivalent:
+\func test (n m : Nat) (p : n = m) (q : m = 0) : n = 0
+  => rewrite p q
+
+\func test' (n m : Nat) (p : n = m) (q : m = 0) : n = 0
+  => transportInv (\lam x => x = 0) p q
+
+-- 'rewriteI p' is shorthand for 'rewrite (inv p)':
+\func rw-test1 (a : Nat) (p : a = 0) : a Nat.+ a = 0
+  => rewrite p idp
+
+\func rw-test2 (a : Nat) (p : 0 = a) : a Nat.+ a = 0
+  => rewriteI p idp
+
+\open Nat(+)
+
+\lemma +-assoc (a b c : Nat) : a + b + c = a + (b + c) \elim c
+  | 0 => idp
+  | suc c => rewrite (+-assoc a b c) idp
+
+-------------------------------------------------
+-- Selective occurrences
+-------------------------------------------------
+
+\func sel-test {x : Nat} (p : suc x = suc (suc x))
+             : suc (suc x) = x Nat.+ 3
+  => rewrite {1} p idp
+
+-------------------------------------------------
+-- Partial application and infix sections
+-------------------------------------------------
+
+\func ex-pmap (n m : Nat) (p : n = m) : suc n = suc m
+  => pmap suc p
+
+\func ex-section-left (a b c : Nat) (p : a = b) (q : b = c) : a = c
+  => (p *>) q   -- equivalent to p *> q
+
+\func ex-double-underscore : Nat -> Nat
+  => __ Nat.+ 1
+
+-------------------------------------------------
+-- run for chaining
+-------------------------------------------------
+
+\func ex-run {A : \Type} (a b c d : A) (p : a = b) (q : b = c) (r : c = d) : a = d
+  => run {
+    rewrite p,
+    rewrite q,
+    rewrite r,
+    idp
+  }
+
+-- 'rewrite' also accepts a tuple of paths:
+\func ex-rewrite-tuple {A : \Type} (a b c d : A) (p : a = b) (q : b = c) (r : c = d) : a = d
+  => rewrite (p, q, r) idp
+
+-------------------------------------------------
+-- in: applying a meta to a value
+-------------------------------------------------
+
+-- Direct application uses the expected type:
+\func in-test1 (x y : Nat) (p : x = zero) (q : zero = y) : x = y
+  => rewrite p q   -- rewrites x -> zero in the goal x = y, giving zero = y; matches q
+
+-- 'in' uses t's type instead:
+\func in-test2 (x y : Nat) (p : zero = x) (q : zero = y) : x = y
+  => rewrite p in q   -- rewrites zero -> x in q's type zero = y, giving x = y
+
+-- 'in' has loose precedence (priority 1, right-associative). To apply
+-- the result of 'f in x' to further arguments, parens are required:
+-- (simp_coe in t) b      -- applies simp_coe in t, then applies result to b
+-- simp_coe in t b        -- parses as simp_coe in (t b) -- different proof
+
+-------------------------------------------------
+-- at: modifying a hypothesis
+-------------------------------------------------
+
+\func at-test1 (x : Nat) (p : x = zero) (q : x = suc zero) : Empty
+  => (rewrite p at q) (\case q \with {})
+
+\func at-test2 (x : Nat) (p : x = zero) (q : x = suc zero) : Empty
+  => rewrite p at q $ \case q \with {}
+
+\func at-test3 (x : Nat) (p : x = zero) (q : x = suc zero) : Empty
+  => run {
+    rewrite p at q,
+    \case q \with {}
+  }
+
+-- 'at' accepts a tuple-chaining form:
+\func at-tuple {x y : Nat} (p1 : x = zero) (p2 : y = suc zero) (q : x = y) : Empty
+  => (rewrite p1, rewrite p2) at q $ \case q \with {}
