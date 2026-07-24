@@ -184,7 +184,7 @@
 -- Polymorphism
 -------------------------------------------------
 
-\func id'' (A : \Type) (a : A) => a
+\func id''.{l} (A : \Type l) (a : A) => a
 {- Haskell:
    id'' :: a -> a
    id'' x = x
@@ -194,7 +194,7 @@
 --                         the codomain of which does not depend on the argument
 -- for example, (id Nat) has type Nat -> Nat
 -- Pi-types generalize them, allowing codomain to depend on the argument
-\func idType : \Pi (A : \Type) (a : A) -> A => id''
+\func idType.{l} : \Pi (A : \Type l) (a : A) -> A => id''
 {- Haskell:
    idType :: a -> a
    idType = id''

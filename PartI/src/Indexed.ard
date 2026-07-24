@@ -22,7 +22,7 @@
 
 \data Unit | unit
 
-\func T (b : Bool) : \Type
+\func T (b : Bool) : \Prop
   | true => Unit
   | false => Empty
 
@@ -76,13 +76,13 @@
 -- Vectors of fixed length
 -------------------------------------------------
 
-\func vec (A : \Type) (n : Nat) : \Type \elim n
+\func vec.{l} (A : \Type l) (n : Nat) : \Type l \elim n
   | 0 => \Sigma
   | suc n => \Sigma A (vec A n)
 
-\func head {A : \Type} (n : Nat) (xs : vec A (suc n)) => xs.1
+\func head.{l} {A : \Type l} (n : Nat) (xs : vec A (suc n)) => xs.1
 
-\func tail {A : \Type} (n : Nat) (xs : vec A (suc n)) => xs.2
+\func tail.{l} {A : \Type l} (n : Nat) (xs : vec A (suc n)) => xs.2
 
 \data Vec (A : \Type) (n : Nat) \elim n
   | 0 => fnil
@@ -134,7 +134,7 @@
 -- The following does not typecheck
 -- \func fin3 : Fin 3 => fsuc (fsuc (fsuc fzero))
 
-\data \fixr 2 Either (A B : \Type)
+\data Either (A B : \Type)
   | inl A
   | inr B
 

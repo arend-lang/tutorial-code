@@ -5,48 +5,52 @@
 
 \func tt : \Type2 => \Type0 -> \Type1
 
+-- `\Type` without a level denotes the infinite universe (it contains every `\Type n`).
+-- A definition mentioning only bare `\Type` is NOT level-polymorphic.
 \func id (A : \Type) (a : A) => a
 
-\func id' (A : \Type \lp) (a : A) => a
+-- To be polymorphic in the predicative level, declare named level parameters with `.{...}`
+-- and use them as `\Type l`. (The implicit `\lp` of older Arend versions no longer exists.)
+\func id'.{l} (A : \Type l) (a : A) => a
 
-\func type : \Type => \Type
+\func type.{l} : \Type (\suc l) => \Type l
 
-\func type' : \Type (\suc \lp) => \Type \lp
+\func test0.{l} : \Type (\max (\suc (\suc l)) 4) => \Type (\max l 3) -> \Type (\suc l)
 
-\func test0 : \Type (\max (\suc (\suc \lp)) 4) => \Type (\max \lp 3) -> \Type (\suc \lp)
+\func test1 => id' Nat 0
+\func test2 => id' \Type0 Nat
+\func test3 => id' (\Type0 -> \Type1) (\lam X => X)
+\func test4.{l} => id' (\Pi (A : \Type l) -> A -> A) id'
 
-\func test1 => id Nat 0
-\func test2 => id \Type0 Nat
-\func test3 => id (\Type0 -> \Type1) (\lam X => X)
-\func test4 => id _ id
-\func test4' => id (\Pi (A : \Type) -> A -> A) id
+-- Level arguments are passed with the same `.{...}` syntax. Positional level arguments and
+-- the `\levels p h` construct no longer exist; a level argument is a single predicative level.
+\func test5.{l} => id'.{\suc l} (\Type l) Nat
+\func test6 => id'.{2} \Type1 \Type0
 
-\func test5 => id (\suc \lp) (\Type \lp) Nat
-
-\func test5' => id (\levels (\suc \lp) _) (\Type \lp) Nat
-\func test6 => id (\levels 2 _) \Type1 \Type0
-
-\data Magma (A : \Type)
+\data Magma.{l} (A : \Type l)
   | con (A -> A -> A)
 
-\data MagmaEx (A : \Type) (B : \Type5)
+\data MagmaEx.{l} (A : \Type l) (B : \Type5)
   | conEx (A -> A -> A)
 
-\func test7 : \Type \lp => MagmaEx \lp Nat \Type4
+\func test7.{l} : \Type l => MagmaEx.{l} Nat \Type4
 
-\class Magma' (A : \Type)
+\class Magma'.{l} (A : \Type l)
   | \infixl 6 ** : A -> A -> A
 
-\func test8 : \Type (\suc \lp) => Magma' \lp
+\func test8.{l} : \Type (\suc l) => Magma'.{l}
 
-\func test9 : \Type \lp => Magma' \lp Nat
+-- Once the universe-typed field A is implemented, the level drops by one:
+-- Magma'.{l} Nat lives in \Type l (e.g. Magma'.{5} Nat : \Type5).
+\func test9.{l} : \Type l => Magma'.{l} Nat
 
-\class Functor (F : \Set -> \Set)
-  | fmap {A B : \Set} : (A -> B) -> F A -> F B
+-- `\Set` cannot be infinite, so it always requires an explicit predicative level.
+\class Functor.{l} (F : \Set l -> \Set l)
+  | fmap {A B : \Set l} : (A -> B) -> F A -> F B
 
-\data Maybe (A : \Type) | nothing | just A
+\data Maybe.{l} (A : \Set l) | nothing | just A
 
-\func test10 : \Type (\suc \lp) => Functor \lp Maybe
+\func test10.{l} : \Type (\suc l) => Functor.{l} Maybe
 
 -------------------------------------------------
 -- Induction principles
@@ -57,7 +61,7 @@
 
 \data Bool | false | true
 
-\func T (b : Bool) : \Type
+\func T (b : Bool) : \Prop
   | true => Unit
   | false => Empty
 
@@ -137,8 +141,8 @@
 -- P3 -- correct and complete specification for 'fac'.
 \func P3 (f : Nat -> Nat) => \Sigma (f 0 = 1) (\Pi (n : Nat) -> f (suc n) = suc n * f n)
 
-\func isSorted {A : \Type} (x : List A) : \Type => {?}
-\func isPerm {A : \Type} (x y : List A) : \Type => {?}
+\func isSorted {A : \Type} (x : List A) : \Prop => {?}
+\func isPerm {A : \Type} (x y : List A) : \Prop => {?}
 
 \func P {A : \Type} (f : List A -> List A) => \Pi (xs : List A) -> \Sigma (isSorted (f xs)) (isPerm (f xs) xs)
 -- where 'isSorted xs' is true iff  'xs' is sorted and

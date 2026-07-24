@@ -4,7 +4,7 @@
 
 \data Unit | unit
 
-\func T (b : Bool) : \Type
+\func T (b : Bool) : \Prop
   | true => \Sigma
   | false => Empty
 
@@ -133,7 +133,7 @@
 
 \func equality-isProp {A : \Type} (p : isSet A) (a a' : A) : isProp (a = a') => p a a'
 
-\func hasLevel (A : \Type) (suc-l : Nat) : \Type \elim suc-l
+\func hasLevel.{l} (A : \Type l) (suc-l : Nat) : \Type l \elim suc-l
   | 0 => isProp A
   | suc suc-l => \Pi (x y : A) -> (x = y) `hasLevel` suc-l
 

@@ -312,7 +312,7 @@
 \func id-isInj {A : \Type} : Map.isInj {\new Map (\lam (a : A) => a)} => {?}
 
 \class Endo \extends Map {
-  | B => A
+  | B => Map.A
 
   \func isIdem => \Pi (x : Map.A) -> f (f x) = f x
 
@@ -325,8 +325,8 @@
 -- Functor
 -------------------------------------------------
 
-\class Functor (F : \Type -> \Type)
-  | fmap {A B : \Type} (f : A -> B) : F A -> F B
-  | fmap-id {A : \Type} (y : F A) : fmap (\lam (x : A) => x) y = y
-  | fmap-comp {A B C : \Type} (f : A -> B) (g : B -> C) (y : F A)
+\class Functor (F : \Type0 -> \Type0)
+  | fmap {A B : \Type0} (f : A -> B) : F A -> F B
+  | fmap-id {A : \Type0} (y : F A) : fmap (\lam (x : A) => x) y = y
+  | fmap-comp {A B C : \Type0} (f : A -> B) (g : B -> C) (y : F A)
   : fmap (\lam x => g (f x)) y = fmap g (fmap f y)

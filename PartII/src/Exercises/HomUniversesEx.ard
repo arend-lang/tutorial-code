@@ -4,7 +4,7 @@
 
 \data List (A : \Type) | nil | cons A (List A)
 
-\func T (b : Bool) : \Type
+\func T (b : Bool) : \Prop
   | true => \Sigma
   | false => Empty
 
@@ -19,7 +19,7 @@
 \truncated \data Trunc (A : \Type) : \Prop
   | trunc A
 
-\func hasLevel (A : \Type) (suc-l : Nat) : \Type \elim suc-l
+\func hasLevel.{l} (A : \Type l) (suc-l : Nat) : \Type l \elim suc-l
   | 0 => isProp A
   | suc suc-l => \Pi (x y : A) -> (x = y) `hasLevel` suc-l
 
@@ -53,7 +53,7 @@
 
 \func \fixr 9 o {A B C : \Type} (g : B -> C) (f : A -> B) => \lam a => g (f a)
 
-\func isCogenerator (C : \Type) => \Pi {A B : \Set} (f g : A -> B) (p : \Pi (h : B -> C) -> h `o` f = h `o` g) -> f = g
+\func isCogenerator.{l} (C : \Type l) => \Pi {A B : \Set l} (f g : A -> B) (p : \Pi (h : B -> C) -> h `o` f = h `o` g) -> f = g
 
 \func PropIsCogenerator : isCogenerator \Prop => {?}
 
@@ -73,6 +73,6 @@
 
 \func isInj {A B : \Type} (f : A -> B) => \Pi (x y : A) -> f x = f y -> x = y
 
-\func isInjective (X : \Type) => \Pi {A B : \Type} (f : A -> X) (i : A -> B) (p : isInj i) -> \Sigma (l : B -> X) (l `o` i = f)
+\func isInjective.{l} (X : \Type l) => \Pi {A B : \Type l} (f : A -> X) (i : A -> B) (p : isInj i) -> \Sigma (l : B -> X) (l `o` i = f)
 
 \func Prop-isInjective : isInjective \Prop => {?}

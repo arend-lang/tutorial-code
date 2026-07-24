@@ -1,0 +1,6 @@
+-- Uses an arend-lib definition (Paths.transportInv) so that a cross-library
+-- find-usages (-fu) query has a hit here as well as in PartI.
+\import Paths (transportInv)
+
+\func partIIUsesTransportInv {A : \Type} (B : A -> \Type) {a a' : A} (p : a = a') (b : B a') : B a
+  => transportInv B p b

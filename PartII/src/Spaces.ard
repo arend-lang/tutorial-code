@@ -28,7 +28,7 @@
         | right => south
    }
 
-\func Sphere (n : Nat) : \Type \lp \oo
+\func Sphere (n : Nat) : \Type0
   | 0 => Susp Empty
   | suc n => Susp (Sphere n)
 

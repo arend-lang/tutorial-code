@@ -13,7 +13,7 @@
 
 \func t3 {P Q R : \Type} (f : \Sigma P Q -> R) (p : P) (q : Q) : R => {?}
 
--- 4. Formulate and prove t5 : (P -> Q -> R) -> P && Q -> R
+-- 4. Formulate and prove t4 : (P -> Q -> R) -> P && Q -> R
 
 -- 5. Prove that (P -> R) -> (Q -> R) -> P || Q -> R
 

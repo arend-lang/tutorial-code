@@ -32,8 +32,8 @@
                                     (\Pi (x : A) -> g (f x) = x)
                                     (\Pi (y : B) -> f (g y) = y)
 
-\func equality=>equivalence {A B : \Type} (p : A = B) : Equiv A B =>
-  transport (Equiv A) p (\lam x => x, \lam x => x, \lam x => idp, \lam x => idp)
+\func equality=>equivalence.{l} {A B : \Type l} (p : A = B) : Equiv A B =>
+  transport (\lam X => Equiv A X) p (\lam x => x, \lam x => x, \lam x => idp, \lam x => idp)
 
 \func isConnected (X : \Type) => \Pi (x y : X) -> TruncP (x = y)
 

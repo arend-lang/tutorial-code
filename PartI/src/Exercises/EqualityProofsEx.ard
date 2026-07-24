@@ -47,17 +47,6 @@
 
 -- 8. Prove that 'filter xs <= xs' for any list xs.
 
-
-
-
-
-
-
-
-
-
-
-
 -- Hint for the exercise 1:
 -- 1. Define 'transport' via 'Jalt'.
 -- 2. Prove that the type \Sigma (x : A) (a = x) is one-element type, that is for all p : \Sigma (x : A) (a = x) holds (x,idp) = p.

@@ -4,7 +4,7 @@
 
 \data List (A : \Type) | nil | cons A (List A)
 
-\func T (b : Bool) : \Type
+\func T (b : Bool) : \Prop
   | true => \Sigma
   | false => Empty
 
@@ -23,7 +23,7 @@
   | yes A
   | no (A -> Empty)
 
-\func hasLevel (A : \Type) (suc-l : Nat) : \Type \elim suc-l
+\func hasLevel.{l} (A : \Type l) (suc-l : Nat) : \Type l \elim suc-l
   | 0 => isProp A
   | suc suc-l => \Pi (x y : A) -> (x = y) `hasLevel` suc-l
 
@@ -41,7 +41,7 @@
 -- 2. Define the predicate "divisible by 3 or by 5" in such a way that it is a proposition.
 --    Prove that 'MultipleOf3Or5' embeds in ℕ.
 
-\func isMultipleOf3Or5 (n : Nat) : \Type => {?}
+\func isMultipleOf3Or5 (n : Nat) : \Prop => {?}
 
 \func isMultipleOf3Or5-isProp (n : Nat) : isProp (isMultipleOf3Or5 n) => {?}
 
@@ -63,7 +63,7 @@
 
 -- 4. Prove that 'Either' is not a proposition in general.
 
-\func Either-isProp (p : \Pi {A B : \Type} (pA : isProp A) (pB : isProp B) -> isProp (Either A B)) : Empty => {?}
+\func Either-isProp.{l} (p : \Pi {A B : \Type l} (pA : isProp A) (pB : isProp B) -> isProp (Either A B)) : Empty => {?}
 
 -- 5. Prove that '\Sigma' preserves propositions.
 
@@ -132,4 +132,4 @@
 --     Hint: Proof by induction. For the induction step 'suc n' one should prove that if 'f,g : \Pi (x : A) -> B x',
 --           then 'f = g' is equivalent to '\Pi (x : A) -> f x = g x'.
 
-\func levelPi {A : \Type} (B : A -> \Type) (n : Nat) (p : \Pi (x : A) -> B x `hasLevel` n) : (\Pi (x : A) -> B x) `hasLevel` n => {?}
+\func levelPi.{l} {A : \Type l} (B : A -> \Type l) (n : Nat) (p : \Pi (x : A) -> B x `hasLevel` n) : (\Pi (x : A) -> B x) `hasLevel` n => {?}

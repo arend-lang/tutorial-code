@@ -51,7 +51,7 @@
 
 \data Bool | true | false
 
-\func T (b : Bool) : \Type
+\func T (b : Bool) : \Prop
   | true => Unit
   | false => Empty
 

@@ -127,7 +127,7 @@
 \data Unit | unit
 
 -- Recursive definition of <=.
-\func lessOrEq (n m : Nat) : \Type
+\func lessOrEq (n m : Nat) : \Type0
   | 0, _ => Unit
   | suc _, 0 => Empty
   | suc n, suc m => lessOrEq n m

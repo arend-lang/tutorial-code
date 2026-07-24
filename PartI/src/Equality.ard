@@ -2,8 +2,8 @@
 -- Symmetry, transitivity, Leibnitz principle
 -------------------------------------------------
 
-\func Leibniz {A : \Type} {a a' : A}
-              (f : \Pi (P : A -> \Type) -> \Sigma (P a -> P a') (P a' -> P a)) : a = a'
+\func Leibniz.{l} {A : \Type l} {a a' : A}
+              (f : \Pi (P : A -> \Type l) -> \Sigma (P a -> P a') (P a' -> P a)) : a = a'
   => (f (\lam x => a = x)).1 idp
 
 \func transport {A : \Type} (B : A -> \Type) {a a' : A} (p : a = a') (b : B a) : B a'
@@ -41,13 +41,15 @@
              (p : \Pi (a : A) -> f a = g a) : f = g
   => path (\lam i => \lam a => p a @ i)
 
-\data \fixr 2 Either (A B : \Type)
+\data Either (A B : \Type)
   | inl A
   | inr B
 
 \data Empty
 
-\func lem : \Pi (X : \Type) -> Either X (X -> Empty) => {?}
+
+\func lem : \Pi (X : \Type0) -> Either X (X -> Empty) => {?}
+
 \func ugly_num : Nat => \case lem Nat \with { | inl _ => 0 | inr _ => 1 }
 
 -------------------------------------------------
@@ -104,7 +106,7 @@
 
 \data Unit | unit
 
-\func T (b : Bool) : \Type
+\func T (b : Bool) : \Prop
   | true => Unit
   | false => Empty
 

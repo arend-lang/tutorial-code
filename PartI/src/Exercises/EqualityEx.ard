@@ -9,7 +9,7 @@
 -- The function 'repl' says that if two types are equal then there exists a function between them.
 
 -- Define 'repl' via 'transport'.
-\func repl {A B : \Type} (p : A = B) (a : A) : B => {?}
+\func repl.{l} {A B : \Type l} (p : A = B) (a : A) : B => {?}
 
 -- Define 'transport' via 'repl' and 'pmap'.
 \func transport' {A : \Type} (B : A -> \Type) {a a' : A} (p : a = a') (b : B a) : B a' => {?}

@@ -1,0 +1,12 @@
+-- Eponymous-module experiment: PartI has a module with the exact same path
+-- (`Shared`) and the same definition name (`sharedThing`). PartI and PartII do
+-- not depend on each other, so within each library this is unambiguous.
+\import Paths (transportInv)
+
+\func sharedThing {A : \Type} (B : A -> \Type) {a a' : A} (p : a = a') (b : B a') : B a
+  => transportInv B p b
+
+\func partIIClient : Nat
+  => sharedThing (\lam (_ : Nat) => Nat) (idp {Nat} {0}) 0
+
+\record SharedRec (val : Nat)

@@ -1,3 +1,5 @@
+\import Logic (prop-pi)
+
 \data Bool | false | true
 
 \data Empty
@@ -41,19 +43,19 @@
 
 \func isSet (A : \Type) => \Pi (x y : A) -> isProp (x = y)
 
-\func Set-to-SetInType (A : \Set \lp) : \Sigma (X : \Type \lp) (isSet X) =>
-  (A, \lam (x y : A) => Path.inProp {x = y})
+\func Set-to-SetInType.{l} (A : \Set l) : \Sigma (X : \Type l) (isSet X) =>
+  (A, \lam (x y : A) (p q : x = y) => prop-pi)
 
 -------------------------------------------------
 -- Universes \n-Type
 -------------------------------------------------
 
-\func bak => \Type 30 66
+\func bak => \Type 30
 \func bak' => \66-Type 30
-\func bak'' => \66-Type
+\func bak''.{l} => \66-Type l
 
 -- The predicate saying "A has level suc-l - 1"
-\func hasLevel (A : \Type) (suc-l : Nat) : \Type \elim suc-l
+\func hasLevel.{l} (A : \Type l) (suc-l : Nat) : \Type l \elim suc-l
   | 0 => isProp A
   | suc suc-l => \Pi (x y : A) -> (x = y) `hasLevel` suc-l
 
@@ -66,7 +68,7 @@
   | trunc A
 
 -- Example: 'Trunc Nat'.
-\func truncNat : trunc 0 = trunc 1 => Path.inProp (trunc 0) (trunc 1)
+\func truncNat : trunc 0 = trunc 1 => prop-pi
 
 -- We can prove the negation of "Empty is nonempty".
 \func Trunc-Empty (t : Trunc Empty) : Empty \elim t
@@ -87,7 +89,7 @@
 -- The eliminator computes on constructor:
 -- Trunc-elim f (trunc a) ===> f a
 
-\func Nat-church => \Pi (X : \Type) -> (X -> X) -> X -> X
+\func Nat-church => \Pi (X : \Type0) -> (X -> X) -> X -> X
 
 \func zero-church : Nat-church => \lam X f x => x
 \func one-church : Nat-church => \lam X f x => f x
@@ -105,7 +107,7 @@
 
 \func T-test (b : Bool) : \Prop => T b
 
-\func T' (b : Bool) : \Type
+\func T' (b : Bool) : \Prop
   | true => \Sigma
   | false => Empty
 
@@ -138,13 +140,13 @@
                                     (\Pi (x : A) -> g (f x) = x)
                                     (\Pi (y : B) -> f (g y) = y)
 
-\func equality=>equivalence (A B : \Type) (p : A = B) : Equiv A B =>
-  transport (Equiv A) p (\lam x => x, \lam x => x, \lam x => idp, \lam x => idp)
+\func equality=>equivalence.{l} (A B : \Type l) (p : A = B) : Equiv A B =>
+  transport (\lam X => Equiv A X) p (\lam x => x, \lam x => x, \lam x => idp, \lam x => idp)
 
-\func equivalence=>equality (A B : \Type) (e : Equiv A B) : A = B =>
+\func equivalence=>equality.{l} (A B : \Type l) (e : Equiv A B) : A = B =>
   path (iso e.1 e.2 e.3 e.4)
 
-\func test (A B : \Type) (e : Equiv A B)
+\func test.{l} (A B : \Type l) (e : Equiv A B)
   : transport (\lam X => X) (equivalence=>equality A B e) = e.1
   => idp
 
@@ -162,7 +164,7 @@
   | 0 => 0
   | suc n => n
 
-\func suc/=0 {n : Nat} (p : suc n = 0) : Empty => transport (\lam n => \case n \with { | 0 => Empty | suc _ => Unit }) p unit
+\func suc/=0 {n : Nat} (p : suc n = 0) : Empty => transport (\lam n => \case n \return \Type0 \with { | 0 => Empty | suc _ => Unit }) p unit
 
 -- We proved this earlier.
 \func NatDecEq (x y : Nat) : Dec (x = y)
@@ -176,15 +178,15 @@
 
 \func isCountable (X : \Type) => Equiv Nat X
 
-\func countableDecEq (X : \Type) (p : isCountable X) : DecEq X =>
-  transport DecEq (equivalence=>equality Nat X p) NatDecEq
+\func countableDecEq.{l} (X : \Type l) (p : isCountable X) : DecEq X =>
+  transport (\lam Y => DecEq Y) (equivalence=>equality Nat X p) NatDecEq
 
 -------------------------------------------------
 -- Implications of univalence for \Prop and \Set
 -------------------------------------------------
 
 \func propExt {A B : \Prop} (f : A -> B) (g : B -> A) : A = B =>
-  equivalence=>equality A B (f, g, \lam x => Path.inProp _ _, \lam y => Path.inProp _ _)
+  equivalence=>equality A B (f, g, \lam x => prop-pi, \lam y => prop-pi)
 
 \func absurd {A : \Type} (e : Empty) : A
 
@@ -198,7 +200,9 @@
 
 \func true/=false (p : true = false) : Empty => absurd (transport T' p ())
 
-\func Set-isNotSet (p : isSet \Set) : Empty =>
+-- NB: originally stated for \Set. Since `equivalence=>equality` produces a \Type-path,
+-- we state it for \Type 0 (the same univalence argument shows it is not a set).
+\func Set-isNotSet (p : isSet (\Type 0)) : Empty =>
   \let
     -- We first prove equality between 'idp' and
     -- the equality, corresponding to 'not'.

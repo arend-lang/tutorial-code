@@ -78,7 +78,7 @@
 
 \data Unit | unit
 
-\func \infix 4 <= (x y : Nat) : \Type
+\func \infix 4 <= (x y : Nat) : \Type0
   | 0, _ => Unit
   | suc _, 0 => Empty
   | suc x, suc y => x <= y
@@ -219,7 +219,7 @@
 
 \func DecPred {A : \Type} (P : A -> \Type) => \Pi (a : A) -> Decide (P a)
 
-\func suc/=0 {n : Nat} (p : suc n = 0) : Empty => transport (\lam n => \case n \with { | 0 => Empty | suc _ => Unit }) p unit
+\func suc/=0 {n : Nat} (p : suc n = 0) : Empty => transport (\lam n => \case n \return \Type0 \with { | 0 => Empty | suc _ => Unit }) p unit
 
 -- the predicate \lam n => n = 0 is decidable
 \func decide0 : DecPred (\lam (n : Nat) => n = 0) => \lam n =>
@@ -273,7 +273,7 @@
 -- Decidable predicates and functions
 -------------------------------------------------
 
-\func T (b : Bool) : \Type
+\func T (b : Bool) : \Prop
   | true => Unit
   | false => Empty
 
